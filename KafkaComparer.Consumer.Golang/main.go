@@ -19,7 +19,7 @@ func main() {
 
 	// init consumer
 	brokers := []string{"172.31.162.65:9092"}
-	topics := []string{"tagsPart3"}
+	topics := []string{"create-review"}
 	consumer, err := cluster.NewConsumer(brokers, "tags-go-consumers", topics, config)
 	if err != nil {
 		panic(err)

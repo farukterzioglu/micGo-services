@@ -4,9 +4,9 @@ import (
 	"context"
 
 	"github.com/Shopify/sarama"
-	"github.com/farukterzioglu/KafkaComparer/Review.CommandEngine/CommandHandlers"
+	"github.com/farukterzioglu/micGo-services/Review.CommandEngine/CommandHandlers"
 
-	pb "github.com/farukterzioglu/KafkaComparer/Review.CommandRpcServer/reviewservice"
+	pb "github.com/farukterzioglu/micGo-services/Review.CommandRpcServer/reviewservice"
 )
 
 // CommandRequest is the request type for commands
@@ -62,6 +62,7 @@ func (service *CommandEngineService) HandleMessage(ctx context.Context, request 
 	handlerRequest = commandhandlers.HandlerRequest{
 		Command:         msg.Value,
 		HandlerResponse: make(chan interface{}),
+		// ErrResponse:make(chan error),
 	}
 
 	// Handler
@@ -78,6 +79,7 @@ func (service *CommandEngineService) HandleMessage(ctx context.Context, request 
 		request.ResponseCh <- resp
 	case err := <-handlerRequest.ErrResponse:
 		request.ErrCh <- err
+	case <-ctx.Done():
+		request.ErrCh <- ctx.Err()
 	}
-	// TODO : case when context canceled
 }

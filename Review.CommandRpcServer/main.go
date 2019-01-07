@@ -6,7 +6,7 @@ import (
 	"log"
 	"net"
 
-	pb "github.com/farukterzioglu/KafkaComparer/Review.CommandRpcServer/reviewservice"
+	pb "github.com/farukterzioglu/micGo-services/Review.CommandRpcServer/reviewservice"
 	"google.golang.org/grpc"
 )
 

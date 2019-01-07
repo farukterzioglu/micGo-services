@@ -12,8 +12,8 @@ import (
 
 	"github.com/Shopify/sarama"
 	cluster "github.com/bsm/sarama-cluster"
-	"github.com/farukterzioglu/KafkaComparer/Review.CommandEngine/Models"
-	pb "github.com/farukterzioglu/KafkaComparer/Review.CommandRpcServer/reviewservice"
+	"github.com/farukterzioglu/micGo-services/Review.CommandEngine/Models"
+	pb "github.com/farukterzioglu/micGo-services/Review.CommandRpcServer/reviewservice"
 	"google.golang.org/grpc"
 )
 
@@ -90,6 +90,12 @@ func main() {
 			wg.Add(1)
 			go func(msg *sarama.ConsumerMessage) {
 				defer wg.Done()
+				defer func() {
+					if r := recover(); r != nil {
+						fmt.Printf("Panic: %+v\n", r)
+						failedMsgChn <- msg
+					}
+				}()
 
 				var (
 					ctx    context.Context

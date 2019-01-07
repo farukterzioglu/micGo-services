@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/farukterzioglu/KafkaComparer/Review.CommandEngine/Commands"
+	"github.com/farukterzioglu/micGo-services/Review.CommandEngine/Commands"
 )
 
 // RateReviewHandler is the handler for CreateReview command

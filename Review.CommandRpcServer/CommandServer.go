@@ -7,8 +7,8 @@ import (
 
 	"google.golang.org/grpc/metadata"
 
-	"github.com/farukterzioglu/KafkaComparer/Review.CommandEngine/Models"
-	pb "github.com/farukterzioglu/KafkaComparer/Review.CommandRpcServer/reviewservice"
+	"github.com/farukterzioglu/micGo-services/Review.CommandEngine/Models"
+	pb "github.com/farukterzioglu/micGo-services/Review.CommandRpcServer/reviewservice"
 )
 
 // CommandServer for handling rpc commands
