@@ -29,18 +29,6 @@ https://github.com/ches/docker-kafka
 `ls /brokers/topics`  
 `ls /consumers`
 
-# Consumer with .Net Core
-
-`cd .\KafkaComparer.Consumer`  
-`docker build -t kafkacomparerconsumer:latest .`  
-`docker run -e CONSUMER_GROUP='tags-consumers' -e TOPIC_NAME='tags' -e KAFKA_URL='172.31.162.65:9092' --rm -it kafkacomparerconsumer`
-
-# Producer with .Net Core
-
-`cd .\KafkaComparer.Producer`  
-`docker build -t kafkacomparerproducer:latest .`  
-`docker run -e TOPIC_NAME='tags' -e KAFKA_URL='172.31.162.65:9092' --rm -it kafkacomparerproducer`
-
 # Consumer with Golang
 
 `cd .\KafkaComparer.Consumer.Golang`  
