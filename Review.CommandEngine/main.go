@@ -109,24 +109,25 @@ func main() {
 					ResponseCh: make(chan interface{}),
 				}
 
+				go func() {
+					select {
+					case resp := <-request.ResponseCh:
+						returnValue := resp.(string)
+						fmt.Printf("Review id : %s\n", returnValue)
+
+						reviewID := models.ReviewIdFromContext(ctx)
+						fmt.Printf("Review id from context: %s\n", reviewID)
+					case err := <-request.ErrCh:
+						fmt.Printf("Request failed : %s\n", err.Error())
+						failedMsgChn <- msg
+					case <-time.After(time.Minute):
+						fmt.Printf("Request timedout!\n")
+						failedMsgChn <- msg
+						cancel()
+					}
+				}()
+
 				commandEngineService.HandleMessage(ctx, request)
-
-				select {
-				case resp := <-request.ResponseCh:
-					returnValue := resp.(string)
-					fmt.Printf("Review id : %s\n", returnValue)
-
-					reviewID := models.ReviewIdFromContext(ctx)
-					fmt.Printf("Review id from context: %s\n", reviewID)
-				case err := <-request.ErrCh:
-					fmt.Printf("Request failed : %s\n", err.Error())
-					failedMsgChn <- msg
-				case <-time.After(time.Minute):
-					fmt.Printf("Request timedout!\n")
-					failedMsgChn <- msg
-					cancel()
-				}
-
 				consumer.MarkOffset(msg, "")
 			}(newMsg)
 		}

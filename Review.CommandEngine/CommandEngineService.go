@@ -60,10 +60,21 @@ func (service *CommandEngineService) HandleMessage(ctx context.Context, request 
 	// Request
 	var handlerRequest commandhandlers.HandlerRequest
 	handlerRequest = commandhandlers.HandlerRequest{
-		Command:         msg.Value,
-		HandlerResponse: make(chan interface{}),
-		// ErrResponse:make(chan error),
+		Command:         	msg.Value,
+		HandlerResponse: 	make(chan interface{}),
+		ErrResponse:		make(chan error),
 	}
+
+	go func(){
+		select {
+		case resp := <-handlerRequest.HandlerResponse:
+			request.ResponseCh <- resp
+		case err := <-handlerRequest.ErrResponse:
+			request.ErrCh <- err
+		case <-ctx.Done():
+			request.ErrCh <- ctx.Err()
+		}
+	}()
 
 	// Handler
 	var handler commandhandlers.ICommandHandler
@@ -73,13 +84,4 @@ func (service *CommandEngineService) HandleMessage(ctx context.Context, request 
 		handler = commandhandlers.NewDefaultHandler()
 	}
 	handler.HandleAsync(ctx, handlerRequest)
-
-	select {
-	case resp := <-handlerRequest.HandlerResponse:
-		request.ResponseCh <- resp
-	case err := <-handlerRequest.ErrResponse:
-		request.ErrCh <- err
-	case <-ctx.Done():
-		request.ErrCh <- ctx.Err()
-	}
 }

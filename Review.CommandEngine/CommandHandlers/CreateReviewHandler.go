@@ -34,13 +34,6 @@ func populateRPCCommand(review *models.Review) *pb.NewReviewRequest {
 
 // HandleAsync handles string message
 func (handler *CreateReviewHandler) HandleAsync(ctx context.Context, request HandlerRequest) {
-	defer func() {
-		if r := recover(); r != nil {
-			fmt.Printf("Panic: %+v\n", r)
-		}
-	}()
-	fmt.Println(string(request.Command[:]))
-
 	var createReviewCommand commands.CreateReviewCommand
 	json.Unmarshal(request.Command, &createReviewCommand)
 
