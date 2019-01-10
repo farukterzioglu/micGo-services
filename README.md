@@ -53,5 +53,11 @@ https://github.com/ches/docker-kafka
 # Compare Engine
 
 Reads from kafka topic and handles commands (new comment etc.) in go routines  
+`docker build -f .\build\Review.CommandEngine\Dockerfile -t command-engine:latest .`  
+`docker run -it command-engine:latest`
+
+# Compare Engine
+
+Reads from kafka topic and handles commands (new comment etc.) in go routines  
 `docker build -f .\build\CommandEngine\Dockerfile -t command-engine:latest .`  
 `docker run -it command-engine:latest`

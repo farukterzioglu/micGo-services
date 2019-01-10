@@ -30,9 +30,21 @@ func (server *CommandServer) SaveReview(ctx context.Context, request *pb.NewRevi
 
 	fmt.Printf("Got a new review : %s (%d star) \n", review.Text, review.Star)
 
-	// TODO : save the review
-
-	return &pb.ReviewId{ReviewId: "0"}, nil
+	// TODO : Test this
+	done := make(chan bool)
+	go func(){
+		// TODO : save the review
+		done <- true
+	}()
+	
+	//for (
+		select {
+		case <- ctx.Done():
+			return nil, ctx.Err
+		case <- done:
+			return &pb.ReviewId{ReviewId: "0"}, nil
+		}
+	//)
 }
 
 // SaveReviews handles SaveReviews rpc command

@@ -107,6 +107,7 @@ func main() {
 				request := CommandRequest{
 					Msg:        msg,
 					ResponseCh: make(chan interface{}),
+					ErrCh : 	make(chan error),
 				}
 
 				go func() {
@@ -118,6 +119,9 @@ func main() {
 						reviewID := models.ReviewIdFromContext(ctx)
 						fmt.Printf("Review id from context: %s\n", reviewID)
 					case err := <-request.ErrCh:
+						fmt.Printf("Request failed : %s\n", err.Error())
+						failedMsgChn <- msg
+					case err := <-ctx.Done():
 						fmt.Printf("Request failed : %s\n", err.Error())
 						failedMsgChn <- msg
 					case <-time.After(time.Minute):
@@ -143,6 +147,7 @@ func main() {
 			}
 		case <-signals:
 			close(msgch)
+			consumer.
 			return
 		}
 	}

@@ -2,22 +2,53 @@ package models
 
 import "context"
 
+// Status defines the status of the review
+type Status int
+
+func (s Status) String() string {
+	switch s {
+	case Created:
+		return "Created"
+	case Approved:
+		return "Approved"
+	case Disapproved:
+		return "Disapproved"
+	case Removed:
+		return "Removed"
+	default:
+		return "Unknown"
+	}
+}
+
+const (
+	// Created status means review created but not approved
+	Created Status = iota + 1
+	// Approved status means review created & approved
+	Approved
+	// Disapproved status means review created but disapproved
+	Disapproved
+	// Removed status means review created then disapproved
+	Removed
+)
+
+// Review struct
+type Review struct {
+	Text   string `json:"text"`
+	Star   int8   `json:"star"`
+	Status Status
+}
+
+// Storing review id in context ->
 type key string
 
 const reviewIDKey key = "reviewIDKey"
 
-// Review struct
-type Review struct {
-	Text string `json:"text"`
-	Star int8   `json:"star"`
-}
-
-// NewContext returns a new Context that carries a provided review id value
+// NewContextWithReviewId returns a new Context that carries a provided review id value
 func NewContextWithReviewId(ctx context.Context, reviewID string) context.Context {
 	return context.WithValue(ctx, reviewIDKey, reviewID)
 }
 
-// FromContext extracts a review id from a Context
+// ReviewIdFromContext extracts a review id from a Context
 func ReviewIdFromContext(ctx context.Context) string {
 	return ctx.Value(reviewIDKey).(string)
 }

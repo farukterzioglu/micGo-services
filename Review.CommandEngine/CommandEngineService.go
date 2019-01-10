@@ -60,21 +60,10 @@ func (service *CommandEngineService) HandleMessage(ctx context.Context, request 
 	// Request
 	var handlerRequest commandhandlers.HandlerRequest
 	handlerRequest = commandhandlers.HandlerRequest{
-		Command:         	msg.Value,
-		HandlerResponse: 	make(chan interface{}),
-		ErrResponse:		make(chan error),
+		Command:         msg.Value,
+		HandlerResponse: request.ResponseCh,
+		ErrResponse:     request.ErrCh,
 	}
-
-	go func(){
-		select {
-		case resp := <-handlerRequest.HandlerResponse:
-			request.ResponseCh <- resp
-		case err := <-handlerRequest.ErrResponse:
-			request.ErrCh <- err
-		case <-ctx.Done():
-			request.ErrCh <- ctx.Err()
-		}
-	}()
 
 	// Handler
 	var handler commandhandlers.ICommandHandler
