@@ -36,6 +36,9 @@ func main() {
 	}
 	defer conn.Close()
 
+	rpcConnState := conn.GetState()
+	fmt.Printf("Rpc cpnnection state : %s", rpcConnState)
+
 	client := pb.NewReviewServiceClient(conn)
 
 	// Configure command engine service
@@ -107,31 +110,38 @@ func main() {
 				request := CommandRequest{
 					Msg:        msg,
 					ResponseCh: make(chan interface{}),
-					ErrCh : 	make(chan error),
+					ErrCh:      make(chan error),
 				}
 
-				go func() {
+				go commandEngineService.HandleMessage(ctx, request)
+
+			Completed:
+				for {
 					select {
 					case resp := <-request.ResponseCh:
 						returnValue := resp.(string)
 						fmt.Printf("Review id : %s\n", returnValue)
 
-						reviewID := models.ReviewIdFromContext(ctx)
+						reviewID := models.ReviewIDFromContext(ctx)
 						fmt.Printf("Review id from context: %s\n", reviewID)
+						break Completed
 					case err := <-request.ErrCh:
 						fmt.Printf("Request failed : %s\n", err.Error())
+						// TODO : Retry
 						failedMsgChn <- msg
-					case err := <-ctx.Done():
-						fmt.Printf("Request failed : %s\n", err.Error())
+						break Completed
+					case <-ctx.Done():
+						fmt.Printf("Request failed : %s\n", ctx.Err())
 						failedMsgChn <- msg
+						break Completed
 					case <-time.After(time.Minute):
 						fmt.Printf("Request timedout!\n")
 						failedMsgChn <- msg
 						cancel()
+						break Completed
 					}
-				}()
+				}
 
-				commandEngineService.HandleMessage(ctx, request)
 				consumer.MarkOffset(msg, "")
 			}(newMsg)
 		}
@@ -147,7 +157,6 @@ func main() {
 			}
 		case <-signals:
 			close(msgch)
-			consumer.
 			return
 		}
 	}

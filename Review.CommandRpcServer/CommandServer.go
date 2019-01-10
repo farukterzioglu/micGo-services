@@ -40,7 +40,7 @@ func (server *CommandServer) SaveReview(ctx context.Context, request *pb.NewRevi
 	//for (
 		select {
 		case <- ctx.Done():
-			return nil, ctx.Err
+			return nil, ctx.Err()
 		case <- done:
 			return &pb.ReviewId{ReviewId: "0"}, nil
 		}

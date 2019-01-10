@@ -35,7 +35,7 @@ const (
 type Review struct {
 	Text   string `json:"text"`
 	Star   int8   `json:"star"`
-	Status Status
+	Status Status `json:"status"`
 }
 
 // Storing review id in context ->
@@ -43,12 +43,17 @@ type key string
 
 const reviewIDKey key = "reviewIDKey"
 
-// NewContextWithReviewId returns a new Context that carries a provided review id value
-func NewContextWithReviewId(ctx context.Context, reviewID string) context.Context {
+// NewContextWithReviewID returns a new Context that carries a provided review id value
+func NewContextWithReviewID(ctx context.Context, reviewID string) context.Context {
 	return context.WithValue(ctx, reviewIDKey, reviewID)
 }
 
-// ReviewIdFromContext extracts a review id from a Context
-func ReviewIdFromContext(ctx context.Context) string {
-	return ctx.Value(reviewIDKey).(string)
+// ReviewIDFromContext extracts a review id from a Context
+func ReviewIDFromContext(ctx context.Context) string {
+	value := ctx.Value(reviewIDKey)
+
+	if value != nil {
+		return value.(string)
+	}
+	return ""
 }
