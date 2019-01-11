@@ -49,7 +49,7 @@ func (handler *CreateReviewHandler) HandleAsync(ctx context.Context, request Han
 		return
 	}
 
-	fmt.Printf("Review create with id : %s \n", response.ReviewId)
+	fmt.Printf("Created a review with id : %s \n", response.ReviewId)
 
 	ctx = models.NewContextWithReviewID(ctx, response.ReviewId)
 	request.HandlerResponse <- response.ReviewId

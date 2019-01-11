@@ -12,8 +12,8 @@ import (
 
 	"github.com/Shopify/sarama"
 	cluster "github.com/bsm/sarama-cluster"
-	"github.com/farukterzioglu/micGo-services/Review.CommandEngine/Models"
 	pb "github.com/farukterzioglu/micGo-services/Review.CommandRpcServer/reviewservice"
+	"github.com/farukterzioglu/micGo-services/Review.Domain/Models"
 	"google.golang.org/grpc"
 )
 
@@ -108,7 +108,10 @@ func main() {
 				defer cancel()
 
 				request := CommandRequest{
-					Msg:        msg,
+					Msg: models.CommandMessage{
+						CommandType: msg.Topic,
+						CommandData: msg.Value,
+					},
 					ResponseCh: make(chan interface{}),
 					ErrCh:      make(chan error),
 				}
@@ -121,9 +124,8 @@ func main() {
 					case resp := <-request.ResponseCh:
 						returnValue := resp.(string)
 						fmt.Printf("Review id : %s\n", returnValue)
-
-						reviewID := models.ReviewIDFromContext(ctx)
-						fmt.Printf("Review id from context: %s\n", reviewID)
+						// reviewID := models.ReviewIDFromContext(ctx)
+						// fmt.Printf("Review id from context: %s\n", reviewID)
 						break Completed
 					case err := <-request.ErrCh:
 						fmt.Printf("Request failed : %s\n", err.Error())

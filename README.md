@@ -41,14 +41,8 @@ https://github.com/ches/docker-kafka
 `docker build -t kafkacomparerproducer:go .`  
 `docker run -it kafkacomparerproducer:go`
 
-# Producer & Consumer with 'kafkacat'
-
-`docker run --interactive --rm confluentinc/cp-kafkacat kafkacat -b 192.168.20.180:9092 -t tags -K: -P`  
-`docker run --tty --interactive --rm confluentinc/cp-kafkacat kafkacat -b 192.168.20.180:9092 -L https://github.com/edenhill/kafkacat`
-
-# Topic with 3 partition
-
-`docker run --rm ches/kafka kafka-topics.sh --create --topic tagsPart3 --replication-factor 1 --partitions 3 --zookeeper 172.31.162.65:2181`
+Sample message to send  
+`{ "review": { "text": "Liked it!!!", "star": 5 } }`
 
 # Compare Engine
 
@@ -56,8 +50,8 @@ Reads from kafka topic and handles commands (new comment etc.) in go routines
 `docker build -f .\build\Review.CommandEngine\Dockerfile -t command-engine:latest .`  
 `docker run -it command-engine:latest`
 
-# Compare Engine
+# Command Rpc Server
 
-Reads from kafka topic and handles commands (new comment etc.) in go routines  
-`docker build -f .\build\CommandEngine\Dockerfile -t command-engine:latest .`  
-`docker run -it command-engine:latest`
+Handles rpc commands
+`docker build -f .\build\Review.CommandRpcServer\Dockerfile -t command-rpcserver:latest .`  
+`docker run -it command-command-rpcserver:latest`
