@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/farukterzioglu/micGo-services/Review.CommandEngine/Commands"
+	"github.com/farukterzioglu/micGo-services/Review.Domain/Commands/V1"
 )
 
 // RateReviewHandler is the handler for CreateReview command

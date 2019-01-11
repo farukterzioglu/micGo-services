@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/farukterzioglu/micGo-services/Review.CommandEngine/Commands"
-	"github.com/farukterzioglu/micGo-services/Review.CommandEngine/Models"
 	pb "github.com/farukterzioglu/micGo-services/Review.CommandRpcServer/reviewservice"
+	"github.com/farukterzioglu/micGo-services/Review.Domain/Commands/V1"
+	"github.com/farukterzioglu/micGo-services/Review.Domain/Models"
 	"google.golang.org/grpc/metadata"
 )
 

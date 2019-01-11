@@ -1,6 +1,8 @@
 package commands
 
-import "github.com/farukterzioglu/micGo-services/Review.CommandEngine/Models"
+import (
+	"github.com/farukterzioglu/micGo-services/Review.Domain/Models"
+)
 
 type CreateReviewCommand struct {
 	Review models.Review `json:"review"`
