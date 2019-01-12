@@ -15,6 +15,8 @@ var (
 )
 
 func main() {
+	flag.Parse()
+
 	serverAddr := fmt.Sprintf("localhost:%d", *port)
 	lis, err := net.Listen("tcp", serverAddr)
 	if err != nil {

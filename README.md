@@ -57,4 +57,4 @@ Reads from kafka topic and handles commands (new comment etc.) in go routines
 
 Handles rpc commands
 `docker build -f .\build\Review.CommandRpcServer\Dockerfile -t command-rpcserver:latest .`  
-`docker run -it command-command-rpcserver:latest`
+`docker run -it -p 10000:10000 command-rpcserver:latest -port=10000`
