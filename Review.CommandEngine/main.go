@@ -78,6 +78,7 @@ func main() {
 		}
 	}()
 
+	// consume failed messages
 	failedMsgChn := make(chan *sarama.ConsumerMessage)
 	go func(failedMsgCh chan *sarama.ConsumerMessage) {
 		for msg := range failedMsgChn {
@@ -86,66 +87,73 @@ func main() {
 		}
 	}(failedMsgChn)
 
+	// handler function for consumer messages
+	var wg sync.WaitGroup
+	handlerFunc := func(msg *sarama.ConsumerMessage) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			defer func() {
+				if r := recover(); r != nil {
+					fmt.Printf("Panic: %+v\n", r)
+					failedMsgChn <- msg
+				}
+			}()
+
+			var (
+				ctx    context.Context
+				cancel context.CancelFunc
+			)
+			ctx, cancel = context.WithCancel(context.Background())
+			defer cancel()
+
+			request := CommandRequest{
+				Msg: models.CommandMessage{
+					CommandType: msg.Topic,
+					CommandData: msg.Value,
+				},
+				ResponseCh: make(chan interface{}),
+				ErrCh:      make(chan error),
+			}
+
+			go commandEngineService.HandleMessage(ctx, request)
+
+		Completed:
+			for {
+				select {
+				case resp := <-request.ResponseCh:
+					returnValue := resp.(string)
+					fmt.Printf("Review id : %s\n", returnValue)
+					// reviewID := models.ReviewIDFromContext(ctx)
+					// fmt.Printf("Review id from context: %s\n", reviewID)
+					break Completed
+				case err := <-request.ErrCh:
+					fmt.Printf("Request failed : %s\n", err.Error())
+					// TODO : Retry
+					failedMsgChn <- msg
+					break Completed
+				case <-ctx.Done():
+					fmt.Printf("Request failed : %s\n", ctx.Err())
+					failedMsgChn <- msg
+					break Completed
+				case <-time.After(time.Minute):
+					fmt.Printf("Request timedout!\n")
+					failedMsgChn <- msg
+					cancel()
+					break Completed
+				}
+			}
+
+			consumer.MarkOffset(msg, "")
+		}()
+	}
+
+	// channel for handling messsaged
 	msgch := make(chan *sarama.ConsumerMessage)
+
 	go func(channel chan *sarama.ConsumerMessage) {
-		var wg sync.WaitGroup
 		for newMsg := range channel {
-			wg.Add(1)
-			go func(msg *sarama.ConsumerMessage) {
-				defer wg.Done()
-				defer func() {
-					if r := recover(); r != nil {
-						fmt.Printf("Panic: %+v\n", r)
-						failedMsgChn <- msg
-					}
-				}()
-
-				var (
-					ctx    context.Context
-					cancel context.CancelFunc
-				)
-				ctx, cancel = context.WithCancel(context.Background())
-				defer cancel()
-
-				request := CommandRequest{
-					Msg: models.CommandMessage{
-						CommandType: msg.Topic,
-						CommandData: msg.Value,
-					},
-					ResponseCh: make(chan interface{}),
-					ErrCh:      make(chan error),
-				}
-
-				go commandEngineService.HandleMessage(ctx, request)
-
-			Completed:
-				for {
-					select {
-					case resp := <-request.ResponseCh:
-						returnValue := resp.(string)
-						fmt.Printf("Review id : %s\n", returnValue)
-						// reviewID := models.ReviewIDFromContext(ctx)
-						// fmt.Printf("Review id from context: %s\n", reviewID)
-						break Completed
-					case err := <-request.ErrCh:
-						fmt.Printf("Request failed : %s\n", err.Error())
-						// TODO : Retry
-						failedMsgChn <- msg
-						break Completed
-					case <-ctx.Done():
-						fmt.Printf("Request failed : %s\n", ctx.Err())
-						failedMsgChn <- msg
-						break Completed
-					case <-time.After(time.Minute):
-						fmt.Printf("Request timedout!\n")
-						failedMsgChn <- msg
-						cancel()
-						break Completed
-					}
-				}
-
-				consumer.MarkOffset(msg, "")
-			}(newMsg)
+			handlerFunc(newMsg)
 		}
 		wg.Wait()
 	}(msgch)

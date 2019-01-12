@@ -32,14 +32,17 @@ https://github.com/ches/docker-kafka
 # Consumer with Golang
 
 `cd .\KafkaComparer.Consumer.Golang`  
-`docker build -t kafkacomparerconsumer:go .`  
-`docker run -it kafkacomparerconsumer:go`
+`go run . -topic_name='create-review' -kafka_brokers='127.0.0.1:9092'`  
+`docker build -f .\build\KafkaComparer.Consumer\Dockerfile -t kafkacomparerconsumer:go .`  
+`docker run -it kafkacomparerconsumer:go -topic_name="create-review" -kafka_brokers="172.24.96.1:9092"`
 
 # Producer with Golang
 
 `cd .\KafkaComparer.Producer.Golang`  
-`docker build -t kafkacomparerproducer:go .`  
-`docker run -it kafkacomparerproducer:go`
+`go run . -topic_name='create-review' -kafka_brokers='127.0.0.1:9092'`
+
+`docker build -f .\build\KafkaComparer.Producer\Dockerfile -t kafkacomparerproducer:go .`  
+`docker run -it kafkacomparerproducer:go -topic_name="create-review" -kafka_brokers="172.24.96.1:9092"`
 
 Sample message to send  
 `{ "review": { "text": "Liked it!!!", "star": 5 } }`
