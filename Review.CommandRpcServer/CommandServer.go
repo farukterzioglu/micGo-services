@@ -7,8 +7,8 @@ import (
 
 	"google.golang.org/grpc/metadata"
 
-	"github.com/farukterzioglu/micGo-services/Review.CommandEngine/Models"
 	pb "github.com/farukterzioglu/micGo-services/Review.CommandRpcServer/reviewservice"
+	"github.com/farukterzioglu/micGo-services/Review.Domain/Models"
 )
 
 // CommandServer for handling rpc commands
@@ -28,11 +28,23 @@ func (server *CommandServer) SaveReview(ctx context.Context, request *pb.NewRevi
 		Star: int8(request.Review.Star),
 	}
 
-	fmt.Printf("Got a new review : %s (%d star) \n", review.Text, review.Star)
+	fmt.Printf("Created a new review : %s (%d star) \n", review.Text, review.Star)
 
-	// TODO : save the review
+	// TODO : Test this
+	done := make(chan bool)
+	go func() {
+		// TODO : save the review
+		done <- true
+	}()
 
-	return &pb.ReviewId{ReviewId: "0"}, nil
+	//for (
+	select {
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	case <-done:
+		return &pb.ReviewId{ReviewId: "0"}, nil
+	}
+	//)
 }
 
 // SaveReviews handles SaveReviews rpc command

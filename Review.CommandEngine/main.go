@@ -12,8 +12,8 @@ import (
 
 	"github.com/Shopify/sarama"
 	cluster "github.com/bsm/sarama-cluster"
-	"github.com/farukterzioglu/micGo-services/Review.CommandEngine/Models"
 	pb "github.com/farukterzioglu/micGo-services/Review.CommandRpcServer/reviewservice"
+	"github.com/farukterzioglu/micGo-services/Review.Domain/Models"
 	"google.golang.org/grpc"
 )
 
@@ -35,6 +35,9 @@ func main() {
 		panic(err)
 	}
 	defer conn.Close()
+
+	rpcConnState := conn.GetState()
+	fmt.Printf("Rpc cpnnection state : %s", rpcConnState)
 
 	client := pb.NewReviewServiceClient(conn)
 
@@ -75,6 +78,7 @@ func main() {
 		}
 	}()
 
+	// consume failed messages
 	failedMsgChn := make(chan *sarama.ConsumerMessage)
 	go func(failedMsgCh chan *sarama.ConsumerMessage) {
 		for msg := range failedMsgChn {
@@ -83,53 +87,73 @@ func main() {
 		}
 	}(failedMsgChn)
 
-	msgch := make(chan *sarama.ConsumerMessage)
-	go func(channel chan *sarama.ConsumerMessage) {
-		var wg sync.WaitGroup
-		for newMsg := range channel {
-			wg.Add(1)
-			go func(msg *sarama.ConsumerMessage) {
-				defer wg.Done()
-				defer func() {
-					if r := recover(); r != nil {
-						fmt.Printf("Panic: %+v\n", r)
-						failedMsgChn <- msg
-					}
-				}()
-
-				var (
-					ctx    context.Context
-					cancel context.CancelFunc
-				)
-				ctx, cancel = context.WithCancel(context.Background())
-				defer cancel()
-
-				request := CommandRequest{
-					Msg:        msg,
-					ResponseCh: make(chan interface{}),
+	// handler function for consumer messages
+	var wg sync.WaitGroup
+	handlerFunc := func(msg *sarama.ConsumerMessage) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			defer func() {
+				if r := recover(); r != nil {
+					fmt.Printf("Panic: %+v\n", r)
+					failedMsgChn <- msg
 				}
+			}()
 
-				go func() {
-					select {
-					case resp := <-request.ResponseCh:
-						returnValue := resp.(string)
-						fmt.Printf("Review id : %s\n", returnValue)
+			var (
+				ctx    context.Context
+				cancel context.CancelFunc
+			)
+			ctx, cancel = context.WithCancel(context.Background())
+			defer cancel()
 
-						reviewID := models.ReviewIdFromContext(ctx)
-						fmt.Printf("Review id from context: %s\n", reviewID)
-					case err := <-request.ErrCh:
-						fmt.Printf("Request failed : %s\n", err.Error())
-						failedMsgChn <- msg
-					case <-time.After(time.Minute):
-						fmt.Printf("Request timedout!\n")
-						failedMsgChn <- msg
-						cancel()
-					}
-				}()
+			request := CommandRequest{
+				Msg: models.CommandMessage{
+					CommandType: msg.Topic,
+					CommandData: msg.Value,
+				},
+				ResponseCh: make(chan interface{}),
+				ErrCh:      make(chan error),
+			}
 
-				commandEngineService.HandleMessage(ctx, request)
-				consumer.MarkOffset(msg, "")
-			}(newMsg)
+			go commandEngineService.HandleMessage(ctx, request)
+
+		Completed:
+			for {
+				select {
+				case resp := <-request.ResponseCh:
+					returnValue := resp.(string)
+					fmt.Printf("Review id : %s\n", returnValue)
+					// reviewID := models.ReviewIDFromContext(ctx)
+					// fmt.Printf("Review id from context: %s\n", reviewID)
+					break Completed
+				case err := <-request.ErrCh:
+					fmt.Printf("Request failed : %s\n", err.Error())
+					// TODO : Retry
+					failedMsgChn <- msg
+					break Completed
+				case <-ctx.Done():
+					fmt.Printf("Request failed : %s\n", ctx.Err())
+					failedMsgChn <- msg
+					break Completed
+				case <-time.After(time.Minute):
+					fmt.Printf("Request timedout!\n")
+					failedMsgChn <- msg
+					cancel()
+					break Completed
+				}
+			}
+
+			consumer.MarkOffset(msg, "")
+		}()
+	}
+
+	// channel for handling messsaged
+	msgch := make(chan *sarama.ConsumerMessage)
+
+	go func(channel chan *sarama.ConsumerMessage) {
+		for newMsg := range channel {
+			handlerFunc(newMsg)
 		}
 		wg.Wait()
 	}(msgch)

@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/farukterzioglu/micGo-services/Review.CommandEngine/Commands"
-	"github.com/farukterzioglu/micGo-services/Review.CommandEngine/Models"
 	pb "github.com/farukterzioglu/micGo-services/Review.CommandRpcServer/reviewservice"
+	"github.com/farukterzioglu/micGo-services/Review.Domain/Commands/V1"
+	"github.com/farukterzioglu/micGo-services/Review.Domain/Models"
 	"google.golang.org/grpc/metadata"
 )
 
@@ -49,8 +49,8 @@ func (handler *CreateReviewHandler) HandleAsync(ctx context.Context, request Han
 		return
 	}
 
-	fmt.Printf("Review create with id : %s \n", response.ReviewId)
+	fmt.Printf("Created a review with id : %s \n", response.ReviewId)
 
-	ctx = models.NewContextWithReviewId(ctx, response.ReviewId)
+	ctx = models.NewContextWithReviewID(ctx, response.ReviewId)
 	request.HandlerResponse <- response.ReviewId
 }

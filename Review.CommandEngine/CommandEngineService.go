@@ -3,15 +3,14 @@ package main
 import (
 	"context"
 
-	"github.com/Shopify/sarama"
 	"github.com/farukterzioglu/micGo-services/Review.CommandEngine/CommandHandlers"
-
 	pb "github.com/farukterzioglu/micGo-services/Review.CommandRpcServer/reviewservice"
+	"github.com/farukterzioglu/micGo-services/Review.Domain/Models"
 )
 
 // CommandRequest is the request type for commands
 type CommandRequest struct {
-	Msg        *sarama.ConsumerMessage
+	Msg        models.CommandMessage
 	ResponseCh chan interface{}
 	ErrCh      chan error
 }
@@ -60,25 +59,14 @@ func (service *CommandEngineService) HandleMessage(ctx context.Context, request 
 	// Request
 	var handlerRequest commandhandlers.HandlerRequest
 	handlerRequest = commandhandlers.HandlerRequest{
-		Command:         	msg.Value,
-		HandlerResponse: 	make(chan interface{}),
-		ErrResponse:		make(chan error),
+		Command:         msg.CommandData,
+		HandlerResponse: request.ResponseCh,
+		ErrResponse:     request.ErrCh,
 	}
-
-	go func(){
-		select {
-		case resp := <-handlerRequest.HandlerResponse:
-			request.ResponseCh <- resp
-		case err := <-handlerRequest.ErrResponse:
-			request.ErrCh <- err
-		case <-ctx.Done():
-			request.ErrCh <- ctx.Err()
-		}
-	}()
 
 	// Handler
 	var handler commandhandlers.ICommandHandler
-	if createHandler, ok := commandMap[msg.Topic]; ok {
+	if createHandler, ok := commandMap[msg.CommandType]; ok {
 		handler = createHandler()
 	} else {
 		handler = commandhandlers.NewDefaultHandler()
