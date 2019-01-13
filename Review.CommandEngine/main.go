@@ -24,6 +24,7 @@ var (
 
 func main() {
 	flag.Parse()
+	fmt.Printf("Broker address : %s\n", *kafkaBrokers)
 
 	// Configure gRpc client
 	var opts []grpc.DialOption

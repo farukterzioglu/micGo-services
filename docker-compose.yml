@@ -24,6 +24,7 @@ services:
       - KAFKA_ADVERTISED_HOST_NAME=kafka
     depends_on:
       - "zookeeper"
+
   topiccreation:
     image: ches/kafka
     networks:
@@ -35,5 +36,32 @@ services:
     command: >
       sh -c "kafka-topics.sh --create --topic create-review --replication-factor 1 --partitions 1 --zookeeper $$ZOOKEEPER_IP:2181 &&
              kafka-topics.sh --create --topic rate-review --replication-factor 1 --partitions 1 --zookeeper $$ZOOKEEPER_IP:2181"
+
+  rpcserver:
+    build:
+      context: .
+      dockerfile: ./build/Review.CommandRpcServer/Dockerfile
+    image: command-rpcserver
+    container_name: command-rpcserver
+    command: -port=10000
+    ports:
+      - "10000:10000" # guest:host
+    networks:
+      - back-tier
+
+  commandengine:
+    build:
+      context: .
+      dockerfile: ./build/Review.CommandEngine/Dockerfile
+    image: command-engine
+    container_name: command-engine
+    command: -topic_name="create-review" -kafka_brokers=kafka:9092
+    networks:
+      - back-tier
+      - kafka-net
+    depends_on:
+      - "topiccreation"
+
 networks:
   kafka-net:
+  back-tier:

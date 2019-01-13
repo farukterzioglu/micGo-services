@@ -1,7 +1,8 @@
 # Start Kafka & Zookeper w/ docker-compose
 
 Start Zookeper & Kafka, create topics "create-review", "rate-review"  
-`docker-compose up`
+`docker-compose up`  
+`docker-compose logs rpcserver`
 
 # Start Kafka & Zookeper
 
@@ -63,3 +64,10 @@ Reads from kafka topic and handles commands (new comment etc.) in go routines
 Handles rpc commands
 `docker build -f .\build\Review.CommandRpcServer\Dockerfile -t command-rpcserver:latest .`  
 `docker run -it -p 10000:10000 command-rpcserver:latest -port=10000`
+
+Notes:  
+Start contaniers using "--network kafka-net"  
+`docker run -d --name zookeeper --network kafka-net zookeeper:3.4`  
+`docker run -d --name kafka --network kafka-net --env ZOOKEEPER_IP=zookeeper ches/kafka`  
+`docker run --rm --network kafka-net ches/kafka kafka-topics.sh --create --topic create-review --replication-factor 1 --partitions 1 --zookeeper zookeeper:2181`  
+`docker run --rm --network kafka-net ches/kafka kafka-topics.sh --list --zookeeper zookeeper:2181`
