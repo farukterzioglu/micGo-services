@@ -1,3 +1,8 @@
+# Start Kafka & Zookeper w/ docker-compose
+
+Start Zookeper & Kafka, create topics "create-review", "rate-review"  
+`docker-compose up`
+
 # Start Kafka & Zookeper
 
 https://github.com/ches/docker-kafka

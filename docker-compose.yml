@@ -1,5 +1,39 @@
-redis:
-  image: jplock/zookeeper
-  container_name: zookeeper
-  ports:
-    - "2181:2181"
+version: "3"
+
+services:
+  zookeeper:
+    image: zookeeper:3.4
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+    networks:
+      - kafka-net
+
+  kafka:
+    image: ches/kafka
+    container_name: kafka
+    ports:
+      - "7203:7203"
+      - "9092:9092"
+    networks:
+      - kafka-net
+    environment:
+      - KAFKA_MESSAGE_MAX_BYTES=3000000
+      - KAFKA_REPLICA_FETCH_MAX_BYTES=3100000
+      - ZOOKEEPER_IP=zookeeper
+      - KAFKA_ADVERTISED_HOST_NAME=kafka
+    depends_on:
+      - "zookeeper"
+  topiccreation:
+    image: ches/kafka
+    networks:
+      - kafka-net
+    depends_on:
+      - "kafka"
+    environment:
+      - ZOOKEEPER_IP=zookeeper
+    command: >
+      sh -c "kafka-topics.sh --create --topic create-review --replication-factor 1 --partitions 1 --zookeeper $$ZOOKEEPER_IP:2181 &&
+             kafka-topics.sh --create --topic rate-review --replication-factor 1 --partitions 1 --zookeeper $$ZOOKEEPER_IP:2181"
+networks:
+  kafka-net:
