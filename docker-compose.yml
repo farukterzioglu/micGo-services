@@ -34,6 +34,7 @@ services:
     environment:
       - ZOOKEEPER_IP=zookeeper
     command: >
+      # TODO : wait for kafka to be ready
       sh -c "kafka-topics.sh --create --topic create-review --replication-factor 1 --partitions 1 --zookeeper $$ZOOKEEPER_IP:2181 &&
              kafka-topics.sh --create --topic rate-review --replication-factor 1 --partitions 1 --zookeeper $$ZOOKEEPER_IP:2181"
 
@@ -45,7 +46,7 @@ services:
     container_name: command-rpcserver
     command: -port=10000
     ports:
-      - "10000:10000" # guest:host
+      - "10000:10000"
     networks:
       - back-tier
 
@@ -55,12 +56,23 @@ services:
       dockerfile: ./build/Review.CommandEngine/Dockerfile
     image: command-engine
     container_name: command-engine
-    command: -topic_name="create-review" -kafka_brokers=kafka:9092
+    command: ./wait-for-it.sh rpcserver:10000 ./app -kafka_brokers=kafka:9092 -server_addr=rpcserver:10000
     networks:
       - back-tier
       - kafka-net
     depends_on:
       - "topiccreation"
+      - "rpcserver"
+
+  web:
+    build:
+      context: .
+      dockerfile: ./build/Review.API/Dockerfile
+    ports:
+      - "80:8000"
+    depends_on:
+      - "topiccreation"
+    command: ["./wait-for-it.sh", "kafka:9092"]
 
 networks:
   kafka-net:

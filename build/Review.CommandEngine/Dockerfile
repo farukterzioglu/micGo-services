@@ -1,10 +1,15 @@
 FROM golang:1.10.1 AS builder
 RUN go version
 
-COPY ./Review.CommandEngine /go/src/github.com/farukterzioglu/micGo-services/Review.CommandEngine/
-WORKDIR /go/src/github.com/farukterzioglu/micGo-services/Review.CommandEngine/
 RUN set -x && \
-    go get github.com/bsm/sarama-cluster 
+    go get github.com/bsm/sarama-cluster && \
+    go get google.golang.org/grpc && \
+    go get github.com/golang/protobuf/proto
+
+COPY ./Review.Domain /go/src/github.com/farukterzioglu/micGo-services/Review.Domain/
+COPY ./Review.CommandRpcServer /go/src/github.com/farukterzioglu/micGo-services/Review.CommandRpcServer/
+COPY ./Review.CommandEngine /go/src/github.com/farukterzioglu/micGo-services/Review.CommandEngine/
+WORKDIR /go/src/github.com/farukterzioglu/micGo-services/Review.CommandEngine/ 
 
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -o app .
 

@@ -25,6 +25,7 @@ var (
 func main() {
 	flag.Parse()
 	fmt.Printf("Broker address : %s\n", *kafkaBrokers)
+	fmt.Printf("RPC server address : %s\n", *serverAddr)
 
 	// Configure gRpc client
 	var opts []grpc.DialOption
