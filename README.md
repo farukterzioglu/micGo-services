@@ -8,13 +8,13 @@ Start Zookeper & Kafka, create topics "create-review", "rate-review"
 
 https://github.com/ches/docker-kafka
 
-`Set-Variable -Name "ipAddress" -Value "192.168.1.5"`
+`Set-Variable -Name "ipAddress" -Value "172.24.96.1"`
 
 `docker run -d --name zookeeper -p 2181:2181 jplock/zookeeper`
 
 `docker run -d --name kafka -p 7203:7203 -p 9092:9092 -e KAFKA_ADVERTISED_HOST_NAME=$ipAddress -e KAFKA_MESSAGE_MAX_BYTES=3000000 -e KAFKA_REPLICA_FETCH_MAX_BYTES=3100000 -e ZOOKEEPER_IP=$ipAddress ches/kafka`
 
-`docker run --rm ches/kafka kafka-topics.sh --create --topic tags --replication-factor 1 --partitions 1 --zookeeper ($ipAddress + ':2181')`
+`docker run --rm ches/kafka kafka-topics.sh --create --topic create-review --replication-factor 1 --partitions 1 --zookeeper ($ipAddress + ':2181')`
 
 `docker run --rm ches/kafka kafka-topics.sh --list --zookeeper ($ipAddress + ':2181')`
 
@@ -71,3 +71,17 @@ Start contaniers using "--network kafka-net"
 `docker run -d --name kafka --network kafka-net --env ZOOKEEPER_IP=zookeeper ches/kafka`  
 `docker run --rm --network kafka-net ches/kafka kafka-topics.sh --create --topic create-review --replication-factor 1 --partitions 1 --zookeeper zookeeper:2181`  
 `docker run --rm --network kafka-net ches/kafka kafka-topics.sh --list --zookeeper zookeeper:2181`
+
+# Review api
+
+```
+cd .\Review.API
+go run . -kafka_brokers='127.0.0.1:9092'
+```
+
+```
+POST /review HTTP/1.1
+Host: localhost:8000
+Content-Type: application/json
+{ "text": "Sample review", "star": 1 }
+```
