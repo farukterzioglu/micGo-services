@@ -13,8 +13,11 @@ WORKDIR /go/src/github.com/farukterzioglu/micGo-services/Review.CommandEngine/
 
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -o app .
 
-FROM scratch
-WORKDIR /root/
+FROM alpine:latest
+RUN apk add --no-cache bash
+RUN mkdir /app
+WORKDIR /app
 COPY --from=builder /go/src/github.com/farukterzioglu/micGo-services/Review.CommandEngine/app .
+COPY --from=builder /go/src/github.com/farukterzioglu/micGo-services/Review.CommandEngine/wait-for-it.sh .
 
-ENTRYPOINT ["./app"]
+CMD ["./app"]

@@ -15,7 +15,6 @@ import (
 )
 
 var (
-	topicName    = flag.String("topic_name", "", "Name of topic to publish")
 	kafkaBrokers = flag.String("kafka_brokers", "172.24.96.1:9092", "The kafka broker address in the format of host:port")
 )
 
@@ -24,7 +23,6 @@ var producer sarama.SyncProducer
 func main() {
 	flag.Parse()
 	fmt.Printf("Broker address : %s\n", *kafkaBrokers)
-	fmt.Printf("Topic name : %s\n", *topicName)
 
 	var err error
 	producer, err = initProducer()
@@ -64,17 +62,18 @@ func createReview(w http.ResponseWriter, r *http.Request) {
 
 	msg, err := json.Marshal(command)
 	if err != nil {
-		// TODO : return status code
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(err.Error()))
 		return
 	}
 
-	publish(string(msg))
-	// TODO : return 202
+	publish(string(msg), "create-review")
+	w.WriteHeader(http.StatusCreated)
 }
 
-func publish(message string) {
+func publish(message string, topicName string) {
 	msg := &sarama.ProducerMessage{
-		Topic: *topicName,
+		Topic: topicName,
 		Value: sarama.StringEncoder(message),
 	}
 
@@ -83,5 +82,5 @@ func publish(message string) {
 		fmt.Println("Error publish: ", err.Error())
 	}
 
-	fmt.Printf("Delivered [p:%d] (@%d)\n'", p, o)
+	fmt.Printf("Delivered %s[part:%d] (@%d) - %s\n'", topicName, p, o, message)
 }
