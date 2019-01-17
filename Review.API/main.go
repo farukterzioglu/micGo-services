@@ -71,7 +71,7 @@ func createReview(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 }
 
-func publish(message string, topicName string) {
+func publish(message, topicName string) {
 	msg := &sarama.ProducerMessage{
 		Topic: topicName,
 		Value: sarama.StringEncoder(message),
