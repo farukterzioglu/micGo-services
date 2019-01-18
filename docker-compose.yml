@@ -6,8 +6,6 @@ services:
     container_name: zookeeper
     ports:
       - "2181:2181"
-    networks:
-      - kafka-net
 
   kafka:
     image: ches/kafka
@@ -15,24 +13,20 @@ services:
     ports:
       - "7203:7203"
       - "9092:9092"
-    networks:
-      - kafka-net
     environment:
       - KAFKA_MESSAGE_MAX_BYTES=3000000
       - KAFKA_REPLICA_FETCH_MAX_BYTES=3100000
-      - ZOOKEEPER_IP=zookeeper
-      - KAFKA_ADVERTISED_HOST_NAME=kafka
+      - ZOOKEEPER_IP=172.24.96.1
+      - KAFKA_ADVERTISED_HOST_NAME=172.24.96.1
     depends_on:
       - "zookeeper"
 
   topiccreation:
     image: ches/kafka
-    networks:
-      - kafka-net
     depends_on:
       - "kafka"
     environment:
-      - ZOOKEEPER_IP=zookeeper
+      - ZOOKEEPER_IP=172.24.96.1
     command: >
       sh -c "sleep 5 && kafka-topics.sh --create --topic create-review --replication-factor 1 --partitions 1 --zookeeper $$ZOOKEEPER_IP:2181 &&
              kafka-topics.sh --create --topic rate-review --replication-factor 1 --partitions 1 --zookeeper $$ZOOKEEPER_IP:2181"
@@ -43,11 +37,8 @@ services:
       dockerfile: ./build/Review.CommandRpcServer/Dockerfile
     image: command-rpcserver
     container_name: command-rpcserver
-    command: -port=10000
     ports:
       - "10000:10000"
-    networks:
-      - back-tier
 
   commandengine:
     build:
@@ -56,14 +47,10 @@ services:
     image: command-engine
     container_name: command-engine
     command: >
-      sh -c "sleep 15 && ./app -server_addr=rpcserver:10000 -kafka_brokers=kafka:9092"
-    networks:
-      - back-tier
-      - kafka-net
+      sh -c "sleep 15 && ./app -server_addr=172.24.96.1:10000 -kafka_brokers=172.24.96.1:9092 -group_id=review-command-engine"
     depends_on:
       - "topiccreation"
       - "rpcserver"
-
 #   web:
 #     build:
 #       context: .
@@ -73,7 +60,3 @@ services:
 #     depends_on:
 #       - "topiccreation"
 #     command: ["./wait-for-it.sh", "kafka:9092"]
-
-networks:
-  kafka-net:
-  back-tier:

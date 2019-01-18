@@ -55,6 +55,8 @@ Sample message to send
 
 # Compare Engine
 
+`go run . -server_addr="172.24.96.1:10000" -kafka_brokers="172.24.96.1:9092" -group_id="test"`
+
 Reads from kafka topic and handles commands (new comment etc.) in go routines  
 `docker build -f .\build\Review.CommandEngine\Dockerfile -t command-engine:latest .`  
 `docker run -it command-engine:latest`

@@ -1,0 +1,22 @@
+version: "3"
+
+services:
+  zookeeper:
+    image: zookeeper:3.4
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+
+  kafka:
+    image: ches/kafka
+    container_name: kafka
+    ports:
+      - "7203:7203"
+      - "9092:9092"
+    environment:
+      - KAFKA_MESSAGE_MAX_BYTES=3000000
+      - KAFKA_REPLICA_FETCH_MAX_BYTES=3100000
+      - ZOOKEEPER_IP=172.24.96.1
+      - KAFKA_ADVERTISED_HOST_NAME=172.24.96.1
+    depends_on:
+      - "zookeeper"

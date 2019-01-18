@@ -12,7 +12,7 @@ import (
 
 var (
 	topicName    = flag.String("topic_name", "", "Name of topic to publish")
-	kafkaBrokers = flag.String("kafka_brokers", "172.24.96.1:9092", "The kafka broker address in the format of host:port")
+	kafkaBrokers = flag.String("kafka_brokers", "localhost:9092", "The kafka broker address in the format of host:port")
 )
 
 func main() {

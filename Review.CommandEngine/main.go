@@ -20,12 +20,14 @@ import (
 var (
 	serverAddr   = flag.String("server_addr", "127.0.0.1:10000", "The rpc server address in the format of host:port")
 	kafkaBrokers = flag.String("kafka_brokers", "127.0.0.1:9092", "The kafka broker address in the format of host:port")
+	groupID      = flag.String("group_id", "review-command-engine", "Group ID")
 )
 
 func main() {
 	flag.Parse()
 	fmt.Printf("Broker address : %s\n", *kafkaBrokers)
 	fmt.Printf("RPC server address : %s\n", *serverAddr)
+	fmt.Printf("Group Id : %s\n", *groupID)
 
 	// Configure gRpc client
 	var opts []grpc.DialOption
@@ -56,7 +58,7 @@ func main() {
 	// init kafka consumer
 	brokers := []string{*kafkaBrokers} // TODO : parse comma seperated broker list
 	topics := commandEngineService.getTopicList()
-	consumer, err := cluster.NewConsumer(brokers, "review-command-engine", topics, config)
+	consumer, err := cluster.NewConsumer(brokers, *groupID, topics, config)
 	if err != nil {
 		panic(err)
 	}
