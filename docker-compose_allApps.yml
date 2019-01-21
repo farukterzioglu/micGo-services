@@ -30,3 +30,33 @@ services:
     command: >
       sh -c "sleep 5 && kafka-topics.sh --create --topic create-review --replication-factor 1 --partitions 1 --zookeeper $$ZOOKEEPER_IP:2181 &&
              kafka-topics.sh --create --topic rate-review --replication-factor 1 --partitions 1 --zookeeper $$ZOOKEEPER_IP:2181"
+
+  rpcserver:
+    build:
+      context: .
+      dockerfile: ./build/Review.CommandRpcServer/Dockerfile
+    image: command-rpcserver
+    container_name: command-rpcserver
+    ports:
+      - "10000:10000"
+
+  commandengine:
+    build:
+      context: .
+      dockerfile: ./build/Review.CommandEngine/Dockerfile
+    image: command-engine
+    container_name: command-engine
+    command: >
+      sh -c "sleep 15 && ./app -server_addr=172.24.96.1:10000 -kafka_brokers=172.24.96.1:9092 -group_id=review-command-engine"
+    depends_on:
+      - "topiccreation"
+      - "rpcserver"
+#   web:
+#     build:
+#       context: .
+#       dockerfile: ./build/Review.API/Dockerfile
+#     ports:
+#       - "80:8000"
+#     depends_on:
+#       - "topiccreation"
+#     command: ["./wait-for-it.sh", "kafka:9092"]
