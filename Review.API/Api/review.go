@@ -30,6 +30,20 @@ func (routes *ReviewRoutes) RegisterReviewRoutes(r *mux.Router, p string) {
 	ur := r.PathPrefix(p).Subrouter()
 
 	ur.HandleFunc("", createReview).Methods("PUT")
+
+	// swagger:operation POST /{reviewId}/ratereview reviews rateReviewReq
+	// ---
+	// summary: Rates the review.
+	// description: If the review id is null, Error Bad Request will be returned.
+	// parameters:
+	// - name: reviewId
+	//   in: path
+	//   description: id of the review
+	//   type: string
+	//   required: true
+	// responses:
+	//   "200":
+	//     "$ref": "#/responses/ok"
 	ur.HandleFunc("/{reviewId}/ratereview", rateReview).Methods("POST")
 }
 

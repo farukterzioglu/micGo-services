@@ -1,3 +1,30 @@
+// Review API
+//
+// Web API for review project
+//
+//     Schemes: http
+//     BasePath: /v1
+//     Version: 1.0.0
+//     License: MIT http://opensource.org/licenses/MIT
+//     Contact: Faruk Terzioğlu <faruk.terzioglu@hotmail.com>
+//     Host:
+//
+//     Consumes:
+//     - application/json
+//
+//     Produces:
+//     - application/json
+//
+//     Security:
+//     - bearer
+//
+//     SecurityDefinitions:
+//     bearer:
+//          type: apiKey
+//          name: Authorization
+//          in: header
+//
+// swagger:meta
 package main
 
 import (
