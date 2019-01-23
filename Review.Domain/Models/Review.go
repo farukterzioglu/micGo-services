@@ -33,9 +33,9 @@ const (
 
 // Review struct
 type Review struct {
-	Text   string `json:"text"`
-	Star   int8   `json:"star"`
-	Status Status `json:"status"`
+	Text   string
+	Star   int8
+	Status Status
 }
 
 // Storing review id in context ->
