@@ -5,5 +5,5 @@ import (
 )
 
 type CreateReviewCommand struct {
-	Review models.Review `json:"review"`
+	Review models.Review
 }

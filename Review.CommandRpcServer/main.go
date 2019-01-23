@@ -10,19 +10,14 @@ import (
 	"google.golang.org/grpc"
 )
 
-var (
-	port = flag.Int("port", 10000, "The server port")
-)
-
 func main() {
 	flag.Parse()
 
-	serverAddr := fmt.Sprintf("localhost:%d", *port)
-	lis, err := net.Listen("tcp", serverAddr)
+	lis, err := net.Listen("tcp", "localhost:10000")
 	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
+		log.Fatalf("failed to listen: %v\n", err)
 	}
-	fmt.Printf("Running server at %s...\n", serverAddr)
+	fmt.Printf("Running server at %s...\n", "localhost:10000")
 
 	grpcServer := grpc.NewServer()
 	pb.RegisterReviewServiceServer(grpcServer, NewCommandServer())
