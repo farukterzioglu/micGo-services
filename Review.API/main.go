@@ -36,6 +36,7 @@ import (
 
 	"github.com/Shopify/sarama"
 	"github.com/farukterzioglu/micGo-services/Review.API/Api"
+	_ "github.com/farukterzioglu/micGo-services/Review.API/swagger"
 	"github.com/gorilla/mux"
 )
 
@@ -57,6 +58,10 @@ func main() {
 	}
 
 	router := initRouter()
+
+	fs := http.FileServer(http.Dir("./swaggerui/"))
+	router.PathPrefix("/swaggerui/").Handler(http.StripPrefix("/swaggerui/", fs))
+
 	log.Fatal(http.ListenAndServe(":8000", router))
 }
 

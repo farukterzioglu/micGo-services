@@ -4,6 +4,13 @@ import (
 	"github.com/farukterzioglu/micGo-services/Review.API/Dtos"
 )
 
+// Repository model request
+// swagger:parameters createReviewReq
+type swaggCreateReviewReq struct {
+	// in:body
+	Body dtos.Review
+}
+
 // Rate review model request
 // swagger:parameters rateReviewReq
 type swaggerRateReviewReq struct {
@@ -11,12 +18,12 @@ type swaggerRateReviewReq struct {
 	Body dtos.RateReviewDto
 }
 
-// Success response
-// swagger:response ok
-type swaggScsResp struct {
+// HTTP status code 200
+// swagger:response rateReviewResp
+type swaggRateReviewResp struct {
 	// in:body
 	Body struct {
-		// HTTP status code 200 - OK
+		// HTTP status code 200 - Status OK
 		Code int `json:"code"`
 	}
 }

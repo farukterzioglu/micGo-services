@@ -29,9 +29,16 @@ func NewReviewRoutes() *ReviewRoutes {
 func (routes *ReviewRoutes) RegisterReviewRoutes(r *mux.Router, p string) {
 	ur := r.PathPrefix(p).Subrouter()
 
+	// swagger:route PUT /review reviews createReviewReq
+	// ---
+	// summary: Creates a new review.
+	// description:
+	// responses:
+	//   200: ok
+	//   400: badReq
 	ur.HandleFunc("", createReview).Methods("PUT")
 
-	// swagger:operation POST /{reviewId}/ratereview reviews rateReviewReq
+	// swagger:operation POST /review/{reviewId}/ratereview reviews rateReviewReq
 	// ---
 	// summary: Rates the review.
 	// description: If the review id is null, Error Bad Request will be returned.
@@ -43,7 +50,13 @@ func (routes *ReviewRoutes) RegisterReviewRoutes(r *mux.Router, p string) {
 	//   required: true
 	// responses:
 	//   "200":
-	//     "$ref": "#/responses/ok"
+	//     "$ref": "#/responses/rateReviewResp"
+	//   "400":
+	//     "$ref": "#/responses/badReq"
+	//   "404":
+	//     "$ref": "#/responses/notFound"
+	//   "500":
+	//     "$ref": "#/responses/internal"
 	ur.HandleFunc("/{reviewId}/ratereview", rateReview).Methods("POST")
 }
 
