@@ -8,6 +8,7 @@ go run . -kafka_brokers='127.0.0.1:9092'
 ```
 
 Resources  
+https://goswagger.io/  
 https://www.ribice.ba/swagger-golang/  
 https://www.ribice.ba/serving-swaggerui-golang/  
 https://github.com/ribice/golang-swaggerui-example  

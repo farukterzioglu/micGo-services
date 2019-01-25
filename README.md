@@ -1,8 +1,7 @@
 # Start Kafka & Zookeper w/ docker-compose
 
 Start Zookeper & Kafka, create topics "create-review", "rate-review"  
-`docker-compose up`  
-`docker-compose logs rpcserver`
+`docker-compose up`
 
 # Start Kafka & Zookeper
 
@@ -35,29 +34,6 @@ ls /brokers/topics
 ls /consumers
 ```
 
-# Consumer with Golang
-
-```
-cd .\KafkaComparer.Consumer.Golang`
-go run . -topic_name='create-review' -kafka_brokers='127.0.0.1:9092'
-
-docker build -f .\build\KafkaComparer.Consumer\Dockerfile -t kafkacomparerconsumer:go .
-docker run -it kafkacomparerconsumer:go -topic_name="create-review" -kafka_brokers="172.24.96.1:9092"
-```
-
-# Producer with Golang
-
-```
-cd .\KafkaComparer.Producer.Golang
-go run . -topic_name='create-review' -kafka_brokers='127.0.0.1:9092'
-
-docker build -f .\build\KafkaComparer.Producer\Dockerfile -t kafkacomparerproducer:go .
-docker run -it kafkacomparerproducer:go -topic_name="create-review" -kafka_brokers="172.24.96.1:9092"
-```
-
-Sample message to send  
-`{ "review": { "text": "Liked it!!!", "star": 5 } }`
-
 # Compare Engine
 
 Reads from kafka topic and handles commands (new comment etc.) in go routines
@@ -85,11 +61,18 @@ docker run -it -p 10000:10000 command-rpcserver:latest
 ```
 cd .\Review.API
 go run . -kafka_brokers='127.0.0.1:9092'
+
+docker build -f .\build\Review.API\Dockerfile -t review-api:latest .
+docker run -it -p 8000:8000 review-api:latest -kafka_brokers="[PUT-YOUR-HOST-IP]:9092"
+
+// Navigate to http://localhost:8000/swaggerui/
 ```
 
 ```
-POST /review HTTP/1.1
+PUT /v1/review HTTP/1.1
 Host: localhost:8000
 Content-Type: application/json
-{ "text": "Sample review", "star": 1 }
+cache-control: no-cache
+Postman-Token: b39202c7-244c-456d-bac6-7fe706e9a2d8
+{ "text": "Sample review", "star": 1 }------WebKitFormBoundary7MA4YWxkTrZu0gW--
 ```
