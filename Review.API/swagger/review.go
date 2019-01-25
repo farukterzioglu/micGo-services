@@ -1,7 +1,7 @@
 package swagger
 
 import (
-	"github.com/farukterzioglu/micGo-services/Review.API/Dtos"
+	"github.com/farukterzioglu/micGo-services/Review.API/dtos"
 )
 
 // Request containing a review

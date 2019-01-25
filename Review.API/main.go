@@ -35,7 +35,7 @@ import (
 	"os"
 
 	"github.com/Shopify/sarama"
-	"github.com/farukterzioglu/micGo-services/Review.API/Api"
+	"github.com/farukterzioglu/micGo-services/Review.API/api"
 	_ "github.com/farukterzioglu/micGo-services/Review.API/swagger"
 	"github.com/gorilla/mux"
 )

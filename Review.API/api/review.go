@@ -7,7 +7,7 @@ import (
 	"strconv"
 
 	_ "github.com/Shopify/sarama"
-	"github.com/farukterzioglu/micGo-services/Review.API/Dtos"
+	"github.com/farukterzioglu/micGo-services/Review.API/dtos"
 	"github.com/farukterzioglu/micGo-services/Review.Domain/Commands/V1"
 	"github.com/farukterzioglu/micGo-services/Review.Domain/Models"
 
