@@ -1,0 +1,308 @@
+{
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "schemes": [
+    "http"
+  ],
+  "swagger": "2.0",
+  "info": {
+    "description": "Web API for review project",
+    "title": "Review API",
+    "contact": {
+      "name": "Faruk Terzioğlu",
+      "email": "faruk.terzioglu@hotmail.com"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "http://opensource.org/licenses/MIT"
+    },
+    "version": "1.0.0"
+  },
+  "basePath": "/v1",
+  "paths": {
+    "/review": {
+      "get": {
+        "description": "description:",
+        "tags": [
+          "QueryAPI"
+        ],
+        "summary": "summary: Gets all reviews.",
+        "operationId": "reviewList",
+        "responses": {}
+      },
+      "put": {
+        "description": "description:",
+        "tags": [
+          "CommandAPI"
+        ],
+        "summary": "summary: Creates a new review.",
+        "operationId": "createReviewReq",
+        "parameters": [
+          {
+            "name": "Body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ReviewDto"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/ok"
+          },
+          "400": {
+            "$ref": "#/responses/badReq"
+          }
+        }
+      }
+    },
+    "/review/{ReviewID}/ratereview": {
+      "post": {
+        "description": "If the review id is null, Error Bad Request will be returned.",
+        "tags": [
+          "CommandAPI"
+        ],
+        "summary": "Rates the review.",
+        "operationId": "rateReviewReq",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "ReviewID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "Body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ReviewRatingDto"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/rateReviewResp"
+          },
+          "400": {
+            "$ref": "#/responses/badReq"
+          },
+          "404": {
+            "$ref": "#/responses/notFound"
+          },
+          "500": {
+            "$ref": "#/responses/internal"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "ReviewDto": {
+      "description": "Review is a DTO for api requests",
+      "type": "object",
+      "properties": {
+        "star": {
+          "type": "integer",
+          "format": "int8",
+          "x-go-name": "Star"
+        },
+        "text": {
+          "type": "string",
+          "x-go-name": "Text"
+        }
+      },
+      "x-go-package": "github.com/farukterzioglu/micGo-services/Review.API/dtos"
+    },
+    "ReviewRatingDto": {
+      "description": "ReviewRatingDto is review rating data",
+      "type": "object",
+      "properties": {
+        "star": {
+          "type": "integer",
+          "format": "int8",
+          "x-go-name": "Star"
+        }
+      },
+      "x-go-package": "github.com/farukterzioglu/micGo-services/Review.API/dtos"
+    }
+  },
+  "responses": {
+    "badReq": {
+      "description": "Error Bad Request",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "description": "HTTP status code 400 - Status Bad Request",
+            "type": "integer",
+            "format": "int64",
+            "x-go-name": "Code"
+          },
+          "message": {
+            "description": "Detailed error message",
+            "type": "string",
+            "x-go-name": "Message"
+          }
+        }
+      }
+    },
+    "bool": {
+      "description": "Boolean response",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "description": "HTTP Status Code 200",
+            "type": "integer",
+            "format": "int64",
+            "x-go-name": "Code"
+          },
+          "data": {
+            "description": "Boolean true/false",
+            "type": "boolean",
+            "x-go-name": "Data"
+          }
+        }
+      }
+    },
+    "conflict": {
+      "description": "Error Conflict",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "description": "HTTP status code 409 - Conflict",
+            "type": "integer",
+            "format": "int64",
+            "x-go-name": "Code"
+          },
+          "message": {
+            "description": "Detailed error message",
+            "type": "string",
+            "x-go-name": "Message"
+          }
+        }
+      }
+    },
+    "forbidden": {
+      "description": "Error Forbidden",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "description": "HTTP status code 403 - Forbidden",
+            "type": "integer",
+            "format": "int64",
+            "x-go-name": "Code"
+          },
+          "message": {
+            "description": "Detailed error message",
+            "type": "string",
+            "x-go-name": "Message"
+          }
+        }
+      }
+    },
+    "internal": {
+      "description": "Error Interval Server",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "description": "HTTP status code 500 - Internal server error",
+            "type": "integer",
+            "format": "int64",
+            "x-go-name": "Code"
+          },
+          "message": {
+            "description": "Detailed error message",
+            "type": "string",
+            "x-go-name": "Message"
+          }
+        }
+      }
+    },
+    "notFound": {
+      "description": "Error Not Found",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "description": "HTTP status code 404 - Not Found",
+            "type": "integer",
+            "format": "int64",
+            "x-go-name": "Code"
+          },
+          "message": {
+            "description": "Detailed error message",
+            "type": "string",
+            "x-go-name": "Message"
+          }
+        }
+      }
+    },
+    "ok": {
+      "description": "Success response",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "description": "HTTP Status Code 200",
+            "type": "integer",
+            "format": "int64",
+            "x-go-name": "Code"
+          }
+        }
+      }
+    },
+    "rateReviewResp": {
+      "description": "HTTP status code 200",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "description": "HTTP status code 200 - Status OK",
+            "type": "integer",
+            "format": "int64",
+            "x-go-name": "Code"
+          }
+        }
+      }
+    },
+    "reviewsResp": {
+      "description": "HTTP status code 200 and an array of review models in data",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "description": "HTTP status code 200 - Status OK",
+            "type": "integer",
+            "format": "int64",
+            "x-go-name": "Code"
+          },
+          "data": {
+            "description": "Array of review models",
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/ReviewDto"
+            },
+            "x-go-name": "Data"
+          }
+        }
+      }
+    }
+  },
+  "securityDefinitions": {
+    "bearer": {
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header"
+    }
+  }
+}
