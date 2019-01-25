@@ -25,10 +25,19 @@
   "basePath": "/v1",
   "paths": {
     "/review": {
+      "get": {
+        "description": "description:",
+        "tags": [
+          "QueryAPI"
+        ],
+        "summary": "summary: Gets all reviews.",
+        "operationId": "reviewList",
+        "responses": {}
+      },
       "put": {
         "description": "description:",
         "tags": [
-          "reviews"
+          "CommandAPI"
         ],
         "summary": "summary: Creates a new review.",
         "operationId": "createReviewReq",
@@ -36,8 +45,9 @@
           {
             "name": "Body",
             "in": "body",
+            "required": true,
             "schema": {
-              "$ref": "#/definitions/Review"
+              "$ref": "#/definitions/ReviewDto"
             }
           }
         ],
@@ -51,23 +61,27 @@
         }
       }
     },
-    "/review/{reviewId}/ratereview": {
+    "/review/{ReviewID}/ratereview": {
       "post": {
         "description": "If the review id is null, Error Bad Request will be returned.",
         "tags": [
-          "reviews"
+          "CommandAPI"
         ],
         "summary": "Rates the review.",
         "operationId": "rateReviewReq",
         "parameters": [
           {
             "type": "string",
-            "description": "id of the review",
-            "name": "reviewId",
+            "name": "ReviewID",
             "in": "path",
+            "required": true
+          },
+          {
+            "name": "Body",
+            "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/RateReviewDto"
+              "$ref": "#/definitions/ReviewRatingDto"
             }
           }
         ],
@@ -89,18 +103,7 @@
     }
   },
   "definitions": {
-    "RateReviewDto": {
-      "type": "object",
-      "properties": {
-        "star": {
-          "type": "integer",
-          "format": "int8",
-          "x-go-name": "Star"
-        }
-      },
-      "x-go-package": "github.com/farukterzioglu/micGo-services/Review.API/Dtos"
-    },
-    "Review": {
+    "ReviewDto": {
       "description": "Review is a DTO for api requests",
       "type": "object",
       "properties": {
@@ -109,14 +112,21 @@
           "format": "int8",
           "x-go-name": "Star"
         },
-        "status": {
-          "type": "integer",
-          "format": "int8",
-          "x-go-name": "Status"
-        },
         "text": {
           "type": "string",
           "x-go-name": "Text"
+        }
+      },
+      "x-go-package": "github.com/farukterzioglu/micGo-services/Review.API/Dtos"
+    },
+    "ReviewRatingDto": {
+      "description": "ReviewRatingDto is review rating data",
+      "type": "object",
+      "properties": {
+        "star": {
+          "type": "integer",
+          "format": "int8",
+          "x-go-name": "Star"
         }
       },
       "x-go-package": "github.com/farukterzioglu/micGo-services/Review.API/Dtos"
@@ -261,6 +271,28 @@
             "type": "integer",
             "format": "int64",
             "x-go-name": "Code"
+          }
+        }
+      }
+    },
+    "reviewsResp": {
+      "description": "HTTP status code 200 and an array of review models in data",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "description": "HTTP status code 200 - Status OK",
+            "type": "integer",
+            "format": "int64",
+            "x-go-name": "Code"
+          },
+          "data": {
+            "description": "Array of review models",
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/ReviewDto"
+            },
+            "x-go-name": "Data"
           }
         }
       }

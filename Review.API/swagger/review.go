@@ -4,18 +4,34 @@ import (
 	"github.com/farukterzioglu/micGo-services/Review.API/Dtos"
 )
 
-// Repository model request
+// Request containing a review
 // swagger:parameters createReviewReq
 type swaggCreateReviewReq struct {
 	// in:body
-	Body dtos.Review
+	// type: ReviewDto
+	// required: true
+	Body dtos.ReviewDto
 }
 
-// Rate review model request
+// parameters:
+// - name: reviewId
+//   in: path
+//   description: id of the review
+//   type: string
+//   required: true
+
+// Request containing a review rate
 // swagger:parameters rateReviewReq
 type swaggerRateReviewReq struct {
+	// in:path
+	// description: id of the review
+	// type: string
+	// required: true
+	ReviewID string
 	// in:body
-	Body dtos.RateReviewDto
+	// type: ReviewRatingDto
+	// required: true
+	Body dtos.ReviewRatingDto
 }
 
 // HTTP status code 200
@@ -25,5 +41,17 @@ type swaggRateReviewResp struct {
 	Body struct {
 		// HTTP status code 200 - Status OK
 		Code int `json:"code"`
+	}
+}
+
+// HTTP status code 200 and an array of review models in data
+// swagger:response reviewsResp
+type swaggReviewsResp struct {
+	// in:body
+	Body struct {
+		// HTTP status code 200 - Status OK
+		Code int `json:"code"`
+		// Array of review models
+		Data []dtos.ReviewDto `json:"data"`
 	}
 }
