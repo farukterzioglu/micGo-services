@@ -7,7 +7,7 @@ import (
 	"strconv"
 
 	_ "github.com/Shopify/sarama"
-	"github.com/farukterzioglu/micGo-services/Review.API/Dtos"
+	"github.com/farukterzioglu/micGo-services/Review.API/dtos"
 	"github.com/farukterzioglu/micGo-services/Review.Domain/Commands/V1"
 	"github.com/farukterzioglu/micGo-services/Review.Domain/Models"
 
@@ -29,33 +29,61 @@ func NewReviewRoutes() *ReviewRoutes {
 func (routes *ReviewRoutes) RegisterReviewRoutes(r *mux.Router, p string) {
 	ur := r.PathPrefix(p).Subrouter()
 
+	// swagger:route PUT /review CommandAPI createReviewReq
+	// ---
+	// summary: Creates a new review.
+	// description:
+	// responses:
+	//   200: ok
+	//   400: badReq
 	ur.HandleFunc("", createReview).Methods("PUT")
 
-	// swagger:operation POST /{reviewId}/ratereview reviews rateReviewReq
+	// swagger:route GET /review QueryAPI reviewList
+	// ---
+	// summary: Gets all reviews.
+	// description:
+	// responses:
+	//   "200":
+	//     "$ref": "#/responses/reviewsResp"
+	//   "404":
+	//     "$ref": "#/responses/notFound"
+	//   "500":
+	//     "$ref": "#/responses/internal"
+	ur.HandleFunc("", getReviews).Methods("GET")
+
+	// swagger:operation POST /review/{ReviewID}/ratereview CommandAPI rateReviewReq
 	// ---
 	// summary: Rates the review.
 	// description: If the review id is null, Error Bad Request will be returned.
-	// parameters:
-	// - name: reviewId
-	//   in: path
-	//   description: id of the review
-	//   type: string
-	//   required: true
 	// responses:
 	//   "200":
-	//     "$ref": "#/responses/ok"
-	ur.HandleFunc("/{reviewId}/ratereview", rateReview).Methods("POST")
+	//     "$ref": "#/responses/rateReviewResp"
+	//   "400":
+	//     "$ref": "#/responses/badReq"
+	//   "404":
+	//     "$ref": "#/responses/notFound"
+	//   "500":
+	//     "$ref": "#/responses/internal"
+	ur.HandleFunc("/{ReviewID}/ratereview", rateReview).Methods("POST")
+}
+
+func getReviews(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+	w.Write([]byte("Not implemented!"))
 }
 
 func createReview(w http.ResponseWriter, r *http.Request) {
-	var review dtos.Review
+	var review dtos.ReviewDto
 	_ = json.NewDecoder(r.Body).Decode(&review)
 
-	command := &dtos.CreateReviewDto{
-		Review: review,
+	command := &commands.CreateReviewCommand{
+		Review: models.Review{
+			Text: review.Text,
+			Star: review.Star,
+		},
 	}
 
-	command.Review.Status = (int8)(models.Created)
+	command.Review.Status = models.Created
 
 	msg, err := json.Marshal(command)
 	if err != nil {
@@ -76,7 +104,7 @@ func createReview(w http.ResponseWriter, r *http.Request) {
 
 func rateReview(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	reviewIDStr := params["reviewId"]
+	reviewIDStr := params["ReviewID"]
 
 	reviewID, err := strconv.ParseInt(reviewIDStr, 10, 32)
 	if err != nil {
@@ -85,7 +113,7 @@ func rateReview(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var rating dtos.RateReviewDto
+	var rating dtos.ReviewRatingDto
 	_ = json.NewDecoder(r.Body).Decode(&rating)
 
 	command := &commands.RateReviewCommand{
@@ -112,7 +140,7 @@ func rateReview(w http.ResponseWriter, r *http.Request) {
 }
 
 func publish(message, topicName string) error {
-	fmt.Printf("%s - %s", topicName, message)
+	fmt.Printf("%s - %s\n", topicName, message)
 	// msg := &sarama.ProducerMessage{
 	// 	Topic: topicName,
 	// 	Value: sarama.StringEncoder(message),

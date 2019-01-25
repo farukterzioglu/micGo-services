@@ -35,7 +35,8 @@ import (
 	"os"
 
 	"github.com/Shopify/sarama"
-	"github.com/farukterzioglu/micGo-services/Review.API/Api"
+	"github.com/farukterzioglu/micGo-services/Review.API/api"
+	_ "github.com/farukterzioglu/micGo-services/Review.API/swagger"
 	"github.com/gorilla/mux"
 )
 
@@ -49,6 +50,7 @@ func main() {
 	flag.Parse()
 	fmt.Printf("Broker address : %s\n", *kafkaBrokers)
 
+	// Init Kafka producer
 	var err error
 	producer, err = initProducer()
 	if err != nil {
@@ -57,6 +59,12 @@ func main() {
 	}
 
 	router := initRouter()
+
+	// Host Swagger UI
+	fs := http.FileServer(http.Dir("./swaggerui/"))
+	router.PathPrefix("/swaggerui/").Handler(http.StripPrefix("/swaggerui/", fs))
+
+	// Start to listen
 	log.Fatal(http.ListenAndServe(":8000", router))
 }
 
