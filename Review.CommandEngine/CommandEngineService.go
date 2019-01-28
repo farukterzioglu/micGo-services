@@ -31,7 +31,7 @@ func NewCommandEngineService(c *pb.ReviewServiceClient) *CommandEngineService {
 		return commandhandlers.NewCreateReviewHandler(c)
 	}
 	commandMap["rate-review"] = func() commandhandlers.ICommandHandler {
-		return commandhandlers.NewRateReviewHandler()
+		return commandhandlers.NewRateReviewHandler(c)
 	}
 
 	return &CommandEngineService{
