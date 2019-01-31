@@ -2,7 +2,6 @@ package commandhandlers
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	pb "github.com/farukterzioglu/micGo-services/Review.CommandRpcServer/reviewservice"
@@ -35,7 +34,7 @@ func populateRPCCommand(review *models.Review) *pb.NewReviewRequest {
 // HandleAsync handles string message
 func (handler *CreateReviewHandler) HandleAsync(ctx context.Context, request HandlerRequest) {
 	var createReviewCommand commands.CreateReviewCommand
-	json.Unmarshal(request.Command, &createReviewCommand)
+	createReviewCommand = request.Command.(commands.CreateReviewCommand)
 
 	ctx = metadata.NewOutgoingContext(
 		ctx,

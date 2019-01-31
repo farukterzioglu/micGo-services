@@ -2,7 +2,6 @@ package commandhandlers
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	pb "github.com/farukterzioglu/micGo-services/Review.CommandRpcServer/reviewservice"
@@ -24,7 +23,7 @@ func NewRateReviewHandler(c *pb.ReviewServiceClient) *RateReviewHandler {
 // HandleAsync handles string message
 func (handler *RateReviewHandler) HandleAsync(ctx context.Context, request HandlerRequest) {
 	var rateReviewCommand commands.RateReviewCommand
-	json.Unmarshal(request.Command, &rateReviewCommand)
+	rateReviewCommand = request.Command.(commands.RateReviewCommand)
 
 	req := &pb.RateReviewRequest{
 		ReviewId: rateReviewCommand.ReviewID,

@@ -2,9 +2,11 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/farukterzioglu/micGo-services/Review.CommandEngine/CommandHandlers"
 	pb "github.com/farukterzioglu/micGo-services/Review.CommandRpcServer/reviewservice"
+	"github.com/farukterzioglu/micGo-services/Review.Domain/Commands/V1"
 	"github.com/farukterzioglu/micGo-services/Review.Domain/Models"
 )
 
@@ -17,8 +19,6 @@ type CommandRequest struct {
 
 type commandCreatorFunc func() commandhandlers.ICommandHandler
 
-var commandMap map[string]commandCreatorFunc
-
 // CommandEngineService is service that handles command messages
 type CommandEngineService struct {
 	client *pb.ReviewServiceClient
@@ -26,29 +26,9 @@ type CommandEngineService struct {
 
 // NewCommandEngineService returns new command engine service
 func NewCommandEngineService(c *pb.ReviewServiceClient) *CommandEngineService {
-	commandMap = make(map[string]commandCreatorFunc)
-	commandMap["create-review"] = func() commandhandlers.ICommandHandler {
-		return commandhandlers.NewCreateReviewHandler(c)
-	}
-	commandMap["rate-review"] = func() commandhandlers.ICommandHandler {
-		return commandhandlers.NewRateReviewHandler(c)
-	}
-
 	return &CommandEngineService{
 		client: c,
 	}
-}
-
-func (service *CommandEngineService) getTopicList() []string {
-	keys := make([]string, len(commandMap))
-
-	i := 0
-	for k := range commandMap {
-		keys[i] = k
-		i++
-	}
-
-	return keys
 }
 
 // HandleMessage handles consumed command message
@@ -56,20 +36,32 @@ func (service *CommandEngineService) HandleMessage(ctx context.Context, request 
 	msg := request.Msg
 	// fmt.Fprintf(os.Stdout, "%s/%d/%d\t%s\t%s\n", msg.Topic, msg.Partition, msg.Offset, msg.Key, msg.Value)
 
+	// Handler
+	var handler commandhandlers.ICommandHandler
+
+	var commandData commands.ICommand
+	json.Unmarshal(msg.CommandData, &commandData)
+
+	var command commands.ICommand
+	switch cmd := commandData.(type) {
+	case commands.CreateReviewCommand:
+		handler = commandhandlers.NewCreateReviewHandler(service.client)
+		command = cmd
+	case commands.RateReviewCommand:
+		handler = commandhandlers.NewRateReviewHandler(service.client)
+		command = cmd
+	default:
+		handler = commandhandlers.NewDefaultHandler()
+		command = cmd
+	}
+
 	// Request
 	var handlerRequest commandhandlers.HandlerRequest
 	handlerRequest = commandhandlers.HandlerRequest{
-		Command:         msg.CommandData,
+		Command:         command,
 		HandlerResponse: request.ResponseCh,
 		ErrResponse:     request.ErrCh,
 	}
 
-	// Handler
-	var handler commandhandlers.ICommandHandler
-	if createHandler, ok := commandMap[msg.CommandType]; ok {
-		handler = createHandler()
-	} else {
-		handler = commandhandlers.NewDefaultHandler()
-	}
 	handler.HandleAsync(ctx, handlerRequest)
 }

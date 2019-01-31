@@ -14,6 +14,8 @@ import (
 	"github.com/gorilla/mux"
 )
 
+var _topicName = "review-commands"
+
 // ReviewRoutes for review endpoints
 type ReviewRoutes struct {
 	producer *sarama.SyncProducer
@@ -75,7 +77,7 @@ func (routes *ReviewRoutes) createReview(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	err = publish(routes.producer, string(msg), "create-review")
+	err = publish(routes.producer, string(msg), "", _topicName)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(err.Error()))
@@ -112,7 +114,7 @@ func (routes *ReviewRoutes) rateReview(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// TODO : Retry & circuit breake
-	err = publish(routes.producer, string(msg), "rate-review")
+	err = publish(routes.producer, string(msg), reviewIDStr, _topicName)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(err.Error()))
@@ -122,10 +124,11 @@ func (routes *ReviewRoutes) rateReview(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 }
 
-func publish(producer *sarama.SyncProducer, message, topicName string) error {
+func publish(producer *sarama.SyncProducer, message, key, topicName string) error {
 	msg := &sarama.ProducerMessage{
 		Topic: topicName,
 		Value: sarama.StringEncoder(message),
+		Key:   sarama.StringEncoder(key),
 	}
 
 	p, o, err := (*producer).SendMessage(msg)

@@ -1,10 +1,11 @@
 package commandhandlers
 
 import "context"
+import "github.com/farukterzioglu/micGo-services/Review.Domain/Commands/V1"
 
 // HandlerRequest request model for handlers
 type HandlerRequest struct {
-	Command         []byte
+	Command         commands.ICommand
 	HandlerResponse chan interface{}
 	ErrResponse     chan error
 }
