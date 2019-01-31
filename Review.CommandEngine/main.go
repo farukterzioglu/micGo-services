@@ -41,7 +41,7 @@ func main() {
 	defer conn.Close()
 
 	rpcConnState := conn.GetState()
-	fmt.Printf("Rpc cpnnection state : %s", rpcConnState)
+	fmt.Printf("Rpc cpnnection state : %s\n", rpcConnState)
 
 	client := pb.NewReviewServiceClient(conn)
 

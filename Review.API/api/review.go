@@ -39,19 +39,6 @@ func (routes *ReviewRoutes) RegisterReviewRoutes(r *mux.Router, p string) {
 	//   400: badReq
 	ur.HandleFunc("", routes.createReview).Methods("PUT")
 
-	// swagger:route GET /review QueryAPI reviewList
-	// ---
-	// summary: Gets all reviews.
-	// description:
-	// responses:
-	//   "200":
-	//     "$ref": "#/responses/reviewsResp"
-	//   "404":
-	//     "$ref": "#/responses/notFound"
-	//   "500":
-	//     "$ref": "#/responses/internal"
-	ur.HandleFunc("", routes.getReviews).Methods("GET")
-
 	// swagger:operation POST /review/{ReviewID}/ratereview CommandAPI rateReviewReq
 	// ---
 	// summary: Rates the review.
@@ -66,11 +53,6 @@ func (routes *ReviewRoutes) RegisterReviewRoutes(r *mux.Router, p string) {
 	//   "500":
 	//     "$ref": "#/responses/internal"
 	ur.HandleFunc("/{ReviewID}/ratereview", routes.rateReview).Methods("POST")
-}
-
-func (routes *ReviewRoutes) getReviews(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusNotImplemented)
-	w.Write([]byte("Not implemented!"))
 }
 
 func (routes *ReviewRoutes) createReview(w http.ResponseWriter, r *http.Request) {
