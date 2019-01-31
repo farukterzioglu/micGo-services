@@ -34,12 +34,12 @@ ls /brokers/topics
 ls /consumers
 ```
 
-# Compare Engine
+# Command Engine
 
 Reads from kafka topic and handles commands (new comment etc.) in go routines
 
 ```
-go run . -server_addr="172.24.96.1:10000" -kafka_brokers="172.24.96.1:9092" -group_id="test"
+go run . -server_addr="localhost:10000" -kafka_brokers="172.24.96.1:9092" -group_id="test"
 
 docker build -f .\build\Review.CommandEngine\Dockerfile -t command-engine:latest .
 docker run -it command-engine:latest
@@ -60,7 +60,7 @@ docker run -it -p 10000:10000 command-rpcserver:latest
 
 ```
 cd .\Review.API
-go run . -kafka_brokers='127.0.0.1:9092'
+go run . -kafka_brokers='127.0.0.1:9092' -server_addr="localhost:10000"
 
 docker build -f .\build\Review.API\Dockerfile -t review-api:latest .
 docker run -it -p 8000:8000 review-api:latest -kafka_brokers="[PUT-YOUR-HOST-IP]:9092"

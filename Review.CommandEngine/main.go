@@ -41,7 +41,7 @@ func main() {
 	defer conn.Close()
 
 	rpcConnState := conn.GetState()
-	fmt.Printf("Rpc cpnnection state : %s", rpcConnState)
+	fmt.Printf("Rpc cpnnection state : %s\n", rpcConnState)
 
 	client := pb.NewReviewServiceClient(conn)
 
@@ -57,7 +57,7 @@ func main() {
 
 	// init kafka consumer
 	brokers := []string{*kafkaBrokers} // TODO : parse comma seperated broker list
-	topics := commandEngineService.getTopicList()
+	topics := []string{"review-commands"}
 	consumer, err := cluster.NewConsumer(brokers, *groupID, topics, config)
 	if err != nil {
 		panic(err)
@@ -113,7 +113,6 @@ func main() {
 
 			request := CommandRequest{
 				Msg: models.CommandMessage{
-					CommandType: msg.Topic,
 					CommandData: msg.Value,
 				},
 				ResponseCh: make(chan interface{}),

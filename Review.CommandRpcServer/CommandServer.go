@@ -105,3 +105,11 @@ func (server *CommandServer) GetTopReviews(req *pb.GetTopReviewsRequest, stream 
 
 	return nil
 }
+
+// RateReview saves the rating for review
+func (server *CommandServer) RateReview(ctx context.Context, req *pb.RateReviewRequest) (*pb.Empty, error) {
+	// TODO : Save the rating
+	fmt.Printf("Rated -> review id : %d, rating : %d\n", req.ReviewId, req.Star)
+
+	return &pb.Empty{}, nil
+}

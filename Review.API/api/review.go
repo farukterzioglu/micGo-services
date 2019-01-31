@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
-	_ "github.com/Shopify/sarama"
+	"github.com/Shopify/sarama"
 	"github.com/farukterzioglu/micGo-services/Review.API/dtos"
 	"github.com/farukterzioglu/micGo-services/Review.Domain/Commands/V1"
 	"github.com/farukterzioglu/micGo-services/Review.Domain/Models"
@@ -14,15 +14,18 @@ import (
 	"github.com/gorilla/mux"
 )
 
+var _topicName = "review-commands"
+
 // ReviewRoutes for review endpoints
 type ReviewRoutes struct {
-	// TODO : Kafka publisher
+	producer *sarama.SyncProducer
 }
 
 // NewReviewRoutes create a new ReviewRoutes instance
-// TODO : Get publisher from params
-func NewReviewRoutes() *ReviewRoutes {
-	return &ReviewRoutes{}
+func NewReviewRoutes(p *sarama.SyncProducer) *ReviewRoutes {
+	return &ReviewRoutes{
+		producer: p,
+	}
 }
 
 // RegisterReviewRoutes registers routes for Review
@@ -36,20 +39,7 @@ func (routes *ReviewRoutes) RegisterReviewRoutes(r *mux.Router, p string) {
 	// responses:
 	//   200: ok
 	//   400: badReq
-	ur.HandleFunc("", createReview).Methods("PUT")
-
-	// swagger:route GET /review QueryAPI reviewList
-	// ---
-	// summary: Gets all reviews.
-	// description:
-	// responses:
-	//   "200":
-	//     "$ref": "#/responses/reviewsResp"
-	//   "404":
-	//     "$ref": "#/responses/notFound"
-	//   "500":
-	//     "$ref": "#/responses/internal"
-	ur.HandleFunc("", getReviews).Methods("GET")
+	ur.HandleFunc("", routes.createReview).Methods("PUT")
 
 	// swagger:operation POST /review/{ReviewID}/ratereview CommandAPI rateReviewReq
 	// ---
@@ -64,15 +54,10 @@ func (routes *ReviewRoutes) RegisterReviewRoutes(r *mux.Router, p string) {
 	//     "$ref": "#/responses/notFound"
 	//   "500":
 	//     "$ref": "#/responses/internal"
-	ur.HandleFunc("/{ReviewID}/ratereview", rateReview).Methods("POST")
+	ur.HandleFunc("/{ReviewID}/ratereview", routes.rateReview).Methods("POST")
 }
 
-func getReviews(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusNotImplemented)
-	w.Write([]byte("Not implemented!"))
-}
-
-func createReview(w http.ResponseWriter, r *http.Request) {
+func (routes *ReviewRoutes) createReview(w http.ResponseWriter, r *http.Request) {
 	var review dtos.ReviewDto
 	_ = json.NewDecoder(r.Body).Decode(&review)
 
@@ -92,7 +77,7 @@ func createReview(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = publish(string(msg), "create-review")
+	err = publish(routes.producer, string(msg), "", _topicName)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(err.Error()))
@@ -102,7 +87,7 @@ func createReview(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 }
 
-func rateReview(w http.ResponseWriter, r *http.Request) {
+func (routes *ReviewRoutes) rateReview(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	reviewIDStr := params["ReviewID"]
 
@@ -129,7 +114,7 @@ func rateReview(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// TODO : Retry & circuit breake
-	err = publish(string(msg), "rate-review")
+	err = publish(routes.producer, string(msg), reviewIDStr, _topicName)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(err.Error()))
@@ -139,19 +124,19 @@ func rateReview(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 }
 
-func publish(message, topicName string) error {
-	fmt.Printf("%s - %s\n", topicName, message)
-	// msg := &sarama.ProducerMessage{
-	// 	Topic: topicName,
-	// 	Value: sarama.StringEncoder(message),
-	// }
+func publish(producer *sarama.SyncProducer, message, key, topicName string) error {
+	msg := &sarama.ProducerMessage{
+		Topic: topicName,
+		Value: sarama.StringEncoder(message),
+		Key:   sarama.StringEncoder(key),
+	}
 
-	// p, o, err := producer.SendMessage(msg)
-	// if err != nil {
-	// 	fmt.Println("Error publish: ", err.Error())
-	// 	return err
-	// }
+	p, o, err := (*producer).SendMessage(msg)
+	if err != nil {
+		fmt.Println("Error publish: ", err.Error())
+		return err
+	}
 
-	// fmt.Printf("Delivered %s[part:%d] (@%d) - %s\n'", topicName, p, o, message)
+	fmt.Printf("Delivered %s[part:%d] (@%d) - %s\n", topicName, p, o, message)
 	return nil
 }
