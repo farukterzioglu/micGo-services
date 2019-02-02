@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
 
 	"github.com/Shopify/sarama"
 	"github.com/farukterzioglu/micGo-services/Review.API/dtos"
 	"github.com/farukterzioglu/micGo-services/Review.Domain/Commands/V1"
 	"github.com/farukterzioglu/micGo-services/Review.Domain/Models"
+	"github.com/google/uuid"
 
 	"github.com/gorilla/mux"
 )
@@ -61,8 +61,11 @@ func (routes *ReviewRoutes) createReview(w http.ResponseWriter, r *http.Request)
 	var review dtos.ReviewDto
 	_ = json.NewDecoder(r.Body).Decode(&review)
 
+	id, _ := uuid.NewRandom()
+	reviewID := id.String()
 	command := &commands.CreateReviewCommand{
 		Review: models.Review{
+			ID:   reviewID,
 			Text: review.Text,
 			Star: review.Star,
 		},
@@ -88,13 +91,16 @@ func (routes *ReviewRoutes) createReview(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	err = publish(routes.producer, cmdMessageStr, "", _topicName)
+	err = publish(routes.producer, cmdMessageStr, reviewID, _topicName)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(err.Error()))
 		return
 	}
 
+	// TODO : Gives a warning : 'http: multiple response.WriteHeader calls'
+	w.Header().Set("Content-Location", "/review/"+reviewID)
+	json.NewEncoder(w).Encode(reviewID)
 	w.WriteHeader(http.StatusCreated)
 }
 
@@ -102,7 +108,7 @@ func (routes *ReviewRoutes) rateReview(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	reviewIDStr := params["ReviewID"]
 
-	reviewID, err := strconv.ParseInt(reviewIDStr, 10, 32)
+	reviewID, err := uuid.Parse(reviewIDStr)
 	if err != nil {
 		// TODO : write validation message to response
 		w.WriteHeader(http.StatusBadRequest)
@@ -113,7 +119,7 @@ func (routes *ReviewRoutes) rateReview(w http.ResponseWriter, r *http.Request) {
 	_ = json.NewDecoder(r.Body).Decode(&rating)
 
 	command := &commands.RateReviewCommand{
-		ReviewID: (int32)(reviewID),
+		ReviewID: reviewID.String(),
 		Star:     rating.Star,
 	}
 

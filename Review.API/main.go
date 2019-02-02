@@ -108,6 +108,7 @@ func initRPCServer() (*pb.ReviewServiceClient, *grpc.ClientConn, error) {
 
 func initRouter(producer *sarama.SyncProducer, client *pb.ReviewServiceClient) (router *mux.Router) {
 	router = mux.NewRouter()
+	router.Use(commonMiddleware)
 
 	v1 := router.PathPrefix("/v1").Subrouter()
 
@@ -118,4 +119,11 @@ func initRouter(producer *sarama.SyncProducer, client *pb.ReviewServiceClient) (
 	queryController.RegisterRoutes(v1, "/review")
 
 	return
+}
+
+func commonMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Content-Type", "application/json")
+		next.ServeHTTP(w, r)
+	})
 }

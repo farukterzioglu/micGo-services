@@ -33,6 +33,7 @@ const (
 
 // Review struct
 type Review struct {
+	ID     string
 	Text   string
 	Star   int8
 	Status Status

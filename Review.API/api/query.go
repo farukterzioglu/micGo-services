@@ -73,10 +73,9 @@ func (controller *QueryController) getReviews(w http.ResponseWriter, r *http.Req
 		reviewList = append(reviewList, reviewDTO)
 	}
 
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(reviewList); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(err.Error()))
 	}
+	w.WriteHeader(http.StatusOK)
 }
