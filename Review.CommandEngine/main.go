@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
@@ -111,12 +112,13 @@ func main() {
 			ctx, cancel = context.WithCancel(context.Background())
 			defer cancel()
 
+			var v models.CommandMessage
+			json.Unmarshal(msg.Value, &v)
+
 			request := CommandRequest{
-				Msg: models.CommandMessage{
-					CommandData: msg.Value,
-				},
-				ResponseCh: make(chan interface{}),
-				ErrCh:      make(chan error),
+				CommandMessage: v,
+				ResponseCh:     make(chan interface{}),
+				ErrCh:          make(chan error),
 			}
 
 			go commandEngineService.HandleMessage(ctx, request)

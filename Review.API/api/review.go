@@ -77,7 +77,18 @@ func (routes *ReviewRoutes) createReview(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	err = publish(routes.producer, string(msg), "", _topicName)
+	cmdMessage := models.CommandMessage{
+		CommandData: msg,
+		CommandType: "create-review",
+	}
+	cmdMessageStr, err := json.Marshal(cmdMessage)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	err = publish(routes.producer, cmdMessageStr, "", _topicName)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(err.Error()))
@@ -113,8 +124,19 @@ func (routes *ReviewRoutes) rateReview(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	cmdMessage := models.CommandMessage{
+		CommandData: msg,
+		CommandType: "rate-review",
+	}
+	cmdMessageStr, err := json.Marshal(cmdMessage)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(err.Error()))
+		return
+	}
+
 	// TODO : Retry & circuit breake
-	err = publish(routes.producer, string(msg), reviewIDStr, _topicName)
+	err = publish(routes.producer, cmdMessageStr, reviewIDStr, _topicName)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(err.Error()))
@@ -124,10 +146,13 @@ func (routes *ReviewRoutes) rateReview(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 }
 
-func publish(producer *sarama.SyncProducer, message, key, topicName string) error {
+func publish(producer *sarama.SyncProducer, message []byte, key, topicName string) error {
+	// TODO : Use byte encoder
+	value := string(message)
+
 	msg := &sarama.ProducerMessage{
 		Topic: topicName,
-		Value: sarama.StringEncoder(message),
+		Value: sarama.StringEncoder(value),
 		Key:   sarama.StringEncoder(key),
 	}
 
@@ -137,6 +162,6 @@ func publish(producer *sarama.SyncProducer, message, key, topicName string) erro
 		return err
 	}
 
-	fmt.Printf("Delivered %s[part:%d] (@%d) - %s\n", topicName, p, o, message)
+	fmt.Printf("Delivered %s[part:%d] (@%d) (key:%s) - %s\n", topicName, p, o, msg.Key, message)
 	return nil
 }

@@ -11,9 +11,11 @@ type DefaultHandler struct{}
 // HandleAsync handles string message
 func (handler *DefaultHandler) HandleAsync(ctx context.Context, request HandlerRequest) {
 	command := request.Command
-	fmt.Printf("Command text : %s", command)
 
-	request.HandlerResponse <- true
+	str := fmt.Sprintf("%v", command)
+	fmt.Println(str)
+
+	request.HandlerResponse <- "Handled by default command handler"
 }
 
 // NewDefaultHandler creates and returns new Default Handler

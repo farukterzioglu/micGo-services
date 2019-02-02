@@ -12,9 +12,9 @@ import (
 
 // CommandRequest is the request type for commands
 type CommandRequest struct {
-	Msg        models.CommandMessage
-	ResponseCh chan interface{}
-	ErrCh      chan error
+	CommandMessage models.CommandMessage
+	ResponseCh     chan interface{}
+	ErrCh          chan error
 }
 
 type commandCreatorFunc func() commandhandlers.ICommandHandler
@@ -33,26 +33,29 @@ func NewCommandEngineService(c *pb.ReviewServiceClient) *CommandEngineService {
 
 // HandleMessage handles consumed command message
 func (service *CommandEngineService) HandleMessage(ctx context.Context, request CommandRequest) {
-	msg := request.Msg
+	commandMessage := request.CommandMessage
 	// fmt.Fprintf(os.Stdout, "%s/%d/%d\t%s\t%s\n", msg.Topic, msg.Partition, msg.Offset, msg.Key, msg.Value)
 
 	// Handler
 	var handler commandhandlers.ICommandHandler
-
-	var commandData commands.ICommand
-	json.Unmarshal(msg.CommandData, &commandData)
-
 	var command commands.ICommand
-	switch cmd := commandData.(type) {
-	case commands.CreateReviewCommand:
+
+	switch commandMessage.CommandType {
+	case "create-review":
+		var createReviewCommand commands.CreateReviewCommand
+		json.Unmarshal(commandMessage.CommandData, &createReviewCommand)
+
 		handler = commandhandlers.NewCreateReviewHandler(service.client)
-		command = cmd
-	case commands.RateReviewCommand:
+		command = createReviewCommand
+	case "rate-review":
+		var rateReviewCommand commands.RateReviewCommand
+		json.Unmarshal(commandMessage.CommandData, &rateReviewCommand)
+
 		handler = commandhandlers.NewRateReviewHandler(service.client)
-		command = cmd
+		command = rateReviewCommand
 	default:
 		handler = commandhandlers.NewDefaultHandler()
-		command = cmd
+		command = commandMessage.CommandData
 	}
 
 	// Request
