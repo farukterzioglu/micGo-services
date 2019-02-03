@@ -8,6 +8,7 @@ import (
 
 	"github.com/farukterzioglu/micGo-services/Review.API/dtos"
 	pb "github.com/farukterzioglu/micGo-services/Review.CommandRpcServer/reviewservice"
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 )
 
@@ -39,6 +40,51 @@ func (controller *QueryController) RegisterRoutes(r *mux.Router, p string) {
 	//   "500":
 	//     "$ref": "#/responses/internal"
 	ur.HandleFunc("", controller.getReviews).Methods("GET")
+
+	// swagger:route GET /review/{ReviewID} QueryAPI getReviewReq
+	// ---
+	// summary: Gets a review.
+	// description:
+	// responses:
+	//   "200":
+	//     "$ref": "#/responses/reviewResp"
+	//   "404":+
+	//     "$ref": "#/responses/notFound"
+	//   "500":
+	//     "$ref": "#/responses/internal"
+	ur.HandleFunc("", controller.getReview).Methods("GET")
+}
+
+func (controller *QueryController) getReview(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	reviewIDStr := params["ReviewID"]
+
+	_, err := uuid.Parse(reviewIDStr)
+	if err != nil {
+		// TODO : write validation message to response
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	req := &pb.GetReviewRequest{ReviewID: reviewIDStr}
+	review, err := (*controller.client).GetReview(r.Context(), req)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	reviewDTO := dtos.ReviewDto{
+		ID:   review.ReviewID,
+		Text: review.Text,
+		Star: int8(review.Star),
+	}
+
+	if err := json.NewEncoder(w).Encode(reviewDTO); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(err.Error()))
+	}
+	w.WriteHeader(http.StatusOK)
 }
 
 func (controller *QueryController) getReviews(w http.ResponseWriter, r *http.Request) {

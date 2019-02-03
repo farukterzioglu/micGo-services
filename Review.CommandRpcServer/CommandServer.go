@@ -78,6 +78,18 @@ func (server *CommandServer) SaveReviews(stream pb.ReviewService_SaveReviewsServ
 	}
 }
 
+// GetReview returns a review by id=req.ReviewID
+func (server *CommandServer) GetReview(ctx context.Context, req *pb.GetReviewRequest) (*pb.Review, error) {
+	reviewID := req.ReviewID
+
+	// TODO : Query data source
+	return &pb.Review{
+		Star:     1,
+		Text:     "Sample review",
+		ReviewID: reviewID,
+	}, nil
+}
+
 // GetTopReviews returns top 'GetTopReviewsRequest.count' reviews
 func (server *CommandServer) GetTopReviews(req *pb.GetTopReviewsRequest, stream pb.ReviewService_GetTopReviewsServer) error {
 	// TODO : Get reviews

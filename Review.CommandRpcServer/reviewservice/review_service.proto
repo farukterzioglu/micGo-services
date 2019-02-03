@@ -5,6 +5,7 @@ package reviewservice;
 service ReviewService {
     rpc SaveReview(NewReviewRequest) returns (ReviewId) {}
     rpc SaveReviews(stream NewReviewRequest) returns (stream ReviewId) {}
+    rpc GetReview(GetReviewRequest) returns (Review) {}
     rpc GetTopReviews(GetTopReviewsRequest) returns (stream Review) {}
     rpc RateReview(RateReviewRequest) returns (Empty) {}
 }
@@ -12,6 +13,7 @@ service ReviewService {
 message Review {
     string Text = 1;
     int32 Star = 2;
+    string ReviewID = 3;
 }
 
 message NewReviewRequest {
@@ -20,6 +22,10 @@ message NewReviewRequest {
    
 message ReviewId {
     string reviewId = 1;
+}
+
+message GetReviewRequest {
+    string reviewID = 1;
 }
 
 message GetTopReviewsRequest {
