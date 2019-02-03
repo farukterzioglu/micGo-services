@@ -51,7 +51,7 @@ func (routes *ReviewRoutes) RegisterReviewRoutes(r *mux.Router, p string) {
 	//   "400":
 	//     "$ref": "#/responses/badReq"
 	//   "404":
-	//     "$ref": "#/responses/notFound"   
+	//     "$ref": "#/responses/notFound"
 	//   "500":
 	//     "$ref": "#/responses/internal"
 	ur.HandleFunc("/{ReviewID}/ratereview", routes.rateReview).Methods("POST")
