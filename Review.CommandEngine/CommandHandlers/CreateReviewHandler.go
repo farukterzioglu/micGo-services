@@ -25,8 +25,11 @@ func NewCreateReviewHandler(c *pb.ReviewServiceClient) *CreateReviewHandler {
 func populateRPCCommand(review *models.Review) *pb.NewReviewRequest {
 	return &pb.NewReviewRequest{
 		Review: &pb.Review{
-			Text: review.Text,
-			Star: int32(review.Star),
+			ReviewID:  review.ID,
+			ProductID: review.ProductID,
+			UserID:    review.UserID,
+			Text:      review.Text,
+			Star:      int32(review.Star),
 		},
 	}
 }

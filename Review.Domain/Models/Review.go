@@ -33,9 +33,12 @@ const (
 
 // Review struct
 type Review struct {
-	Text   string
-	Star   int8
-	Status Status
+	ID        string
+	ProductID string
+	UserID    string
+	Text      string
+	Star      int8
+	Status    Status
 }
 
 // Storing review id in context ->

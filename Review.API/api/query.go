@@ -8,6 +8,7 @@ import (
 
 	"github.com/farukterzioglu/micGo-services/Review.API/dtos"
 	pb "github.com/farukterzioglu/micGo-services/Review.CommandRpcServer/reviewservice"
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 )
 
@@ -29,16 +30,57 @@ func (controller *QueryController) RegisterRoutes(r *mux.Router, p string) {
 
 	// swagger:route GET /review QueryAPI reviewList
 	// ---
-	// summary: Gets all reviews.
-	// description:
+	// Returns all reviews.
+	//
 	// responses:
-	//   "200":
-	//     "$ref": "#/responses/reviewsResp"
-	//   "404":
-	//     "$ref": "#/responses/notFound"
-	//   "500":
-	//     "$ref": "#/responses/internal"
+	//   200: reviewsResp
+	//   404: notFound
+	//	 500: internal
 	ur.HandleFunc("", controller.getReviews).Methods("GET")
+
+	// swagger:route GET /review/{ReviewID} QueryAPI getReviewReq
+	// ---
+	// Returns a review by id.
+	// If the review id is null, Error Bad Request will be returned.
+	// responses:
+	//   200: reviewResp
+	//   404: notFound
+	//	 500: internal
+	ur.HandleFunc("/{ReviewID}", controller.getReview).Methods("GET")
+}
+
+func (controller *QueryController) getReview(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	reviewIDStr := params["ReviewID"]
+
+	_, err := uuid.Parse(reviewIDStr)
+	if err != nil {
+		// TODO : write validation message to response
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	req := &pb.GetReviewRequest{ReviewID: reviewIDStr}
+	review, err := (*controller.client).GetReview(r.Context(), req)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	reviewDTO := dtos.ReviewDto{
+		ID:        review.ReviewID,
+		Text:      review.Text,
+		Star:      int8(review.Star),
+		ProductID: review.ProductID,
+		UserID:    review.UserID,
+	}
+
+	if err := json.NewEncoder(w).Encode(reviewDTO); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(err.Error()))
+	}
+	w.WriteHeader(http.StatusOK)
 }
 
 func (controller *QueryController) getReviews(w http.ResponseWriter, r *http.Request) {
@@ -73,10 +115,9 @@ func (controller *QueryController) getReviews(w http.ResponseWriter, r *http.Req
 		reviewList = append(reviewList, reviewDTO)
 	}
 
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(reviewList); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(err.Error()))
 	}
+	w.WriteHeader(http.StatusOK)
 }

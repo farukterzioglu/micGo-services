@@ -24,11 +24,18 @@ func NewCommandServer() *CommandServer {
 // SaveReview handles SaveReview rpc command
 func (server *CommandServer) SaveReview(ctx context.Context, request *pb.NewReviewRequest) (*pb.ReviewId, error) {
 	review := models.Review{
-		Text: request.Review.Text,
-		Star: int8(request.Review.Star),
+		ID:        request.Review.ReviewID,
+		ProductID: request.Review.ProductID,
+		UserID:    request.Review.UserID,
+		Text:      request.Review.Text,
+		Star:      int8(request.Review.Star),
 	}
 
-	fmt.Printf("Created a new review : %s (%d star) \n", review.Text, review.Star)
+	fmt.Printf("Created a new review : %v\n", review)
+
+	// TODO : Send to Orders actor to check for buyer
+
+	// TODO : Send to Users actor for review approval
 
 	// TODO : Test this
 	done := make(chan bool)
@@ -78,6 +85,18 @@ func (server *CommandServer) SaveReviews(stream pb.ReviewService_SaveReviewsServ
 	}
 }
 
+// GetReview returns a review by id=req.ReviewID
+func (server *CommandServer) GetReview(ctx context.Context, req *pb.GetReviewRequest) (*pb.Review, error) {
+	reviewID := req.ReviewID
+
+	// TODO : Query data source
+	return &pb.Review{
+		Star:     1,
+		Text:     "Sample review",
+		ReviewID: reviewID,
+	}, nil
+}
+
 // GetTopReviews returns top 'GetTopReviewsRequest.count' reviews
 func (server *CommandServer) GetTopReviews(req *pb.GetTopReviewsRequest, stream pb.ReviewService_GetTopReviewsServer) error {
 	// TODO : Get reviews
@@ -109,7 +128,7 @@ func (server *CommandServer) GetTopReviews(req *pb.GetTopReviewsRequest, stream 
 // RateReview saves the rating for review
 func (server *CommandServer) RateReview(ctx context.Context, req *pb.RateReviewRequest) (*pb.Empty, error) {
 	// TODO : Save the rating
-	fmt.Printf("Rated -> review id : %d, rating : %d\n", req.ReviewId, req.Star)
+	fmt.Printf("Rated -> review id : %s, rating : %d\n", req.ReviewId, req.Star)
 
 	return &pb.Empty{}, nil
 }

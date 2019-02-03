@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
 
 	"github.com/Shopify/sarama"
 	"github.com/farukterzioglu/micGo-services/Review.API/dtos"
 	"github.com/farukterzioglu/micGo-services/Review.Domain/Commands/V1"
 	"github.com/farukterzioglu/micGo-services/Review.Domain/Models"
+	"github.com/google/uuid"
 
 	"github.com/gorilla/mux"
 )
@@ -34,10 +34,10 @@ func (routes *ReviewRoutes) RegisterReviewRoutes(r *mux.Router, p string) {
 
 	// swagger:route PUT /review CommandAPI createReviewReq
 	// ---
-	// summary: Creates a new review.
-	// description:
+	// Creates a new review.
+	// Creates a 'create review commnand' and sends to Kafka
 	// responses:
-	//   200: ok
+	//   202: ok
 	//   400: badReq
 	ur.HandleFunc("", routes.createReview).Methods("PUT")
 
@@ -46,7 +46,7 @@ func (routes *ReviewRoutes) RegisterReviewRoutes(r *mux.Router, p string) {
 	// summary: Rates the review.
 	// description: If the review id is null, Error Bad Request will be returned.
 	// responses:
-	//   "200":
+	//   "202":
 	//     "$ref": "#/responses/rateReviewResp"
 	//   "400":
 	//     "$ref": "#/responses/badReq"
@@ -58,13 +58,17 @@ func (routes *ReviewRoutes) RegisterReviewRoutes(r *mux.Router, p string) {
 }
 
 func (routes *ReviewRoutes) createReview(w http.ResponseWriter, r *http.Request) {
-	var review dtos.ReviewDto
+	var review dtos.CreateReviewDto
 	_ = json.NewDecoder(r.Body).Decode(&review)
 
+	id, _ := uuid.NewRandom()
+	reviewID := id.String()
 	command := &commands.CreateReviewCommand{
 		Review: models.Review{
-			Text: review.Text,
-			Star: review.Star,
+			ID:        reviewID,
+			ProductID: review.ProductID,
+			Text:      review.Text,
+			Star:      review.Star,
 		},
 	}
 
@@ -77,21 +81,35 @@ func (routes *ReviewRoutes) createReview(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	err = publish(routes.producer, string(msg), "", _topicName)
+	cmdMessage := models.CommandMessage{
+		CommandData: msg,
+		CommandType: "create-review",
+	}
+	cmdMessageStr, err := json.Marshal(cmdMessage)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(err.Error()))
 		return
 	}
 
-	w.WriteHeader(http.StatusCreated)
+	err = publish(routes.producer, cmdMessageStr, reviewID, _topicName)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	// TODO : Gives a warning : 'http: multiple response.WriteHeader calls'
+	w.Header().Set("Content-Location", "/review/"+reviewID)
+	json.NewEncoder(w).Encode(reviewID)
+	w.WriteHeader(http.StatusAccepted)
 }
 
 func (routes *ReviewRoutes) rateReview(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	reviewIDStr := params["ReviewID"]
 
-	reviewID, err := strconv.ParseInt(reviewIDStr, 10, 32)
+	reviewID, err := uuid.Parse(reviewIDStr)
 	if err != nil {
 		// TODO : write validation message to response
 		w.WriteHeader(http.StatusBadRequest)
@@ -102,7 +120,7 @@ func (routes *ReviewRoutes) rateReview(w http.ResponseWriter, r *http.Request) {
 	_ = json.NewDecoder(r.Body).Decode(&rating)
 
 	command := &commands.RateReviewCommand{
-		ReviewID: (int32)(reviewID),
+		ReviewID: reviewID.String(),
 		Star:     rating.Star,
 	}
 
@@ -113,21 +131,35 @@ func (routes *ReviewRoutes) rateReview(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO : Retry & circuit breake
-	err = publish(routes.producer, string(msg), reviewIDStr, _topicName)
+	cmdMessage := models.CommandMessage{
+		CommandData: msg,
+		CommandType: "rate-review",
+	}
+	cmdMessageStr, err := json.Marshal(cmdMessage)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(err.Error()))
 		return
 	}
 
-	w.WriteHeader(http.StatusCreated)
+	// TODO : Retry & circuit breake
+	err = publish(routes.producer, cmdMessageStr, reviewIDStr, _topicName)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	w.WriteHeader(http.StatusAccepted)
 }
 
-func publish(producer *sarama.SyncProducer, message, key, topicName string) error {
+func publish(producer *sarama.SyncProducer, message []byte, key, topicName string) error {
+	// TODO : Use byte encoder
+	value := string(message)
+
 	msg := &sarama.ProducerMessage{
 		Topic: topicName,
-		Value: sarama.StringEncoder(message),
+		Value: sarama.StringEncoder(value),
 		Key:   sarama.StringEncoder(key),
 	}
 
@@ -137,6 +169,6 @@ func publish(producer *sarama.SyncProducer, message, key, topicName string) erro
 		return err
 	}
 
-	fmt.Printf("Delivered %s[part:%d] (@%d) - %s\n", topicName, p, o, message)
+	fmt.Printf("Delivered %s[part:%d] (@%d) (key:%s) - %s\n", topicName, p, o, msg.Key, message)
 	return nil
 }
