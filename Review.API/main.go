@@ -108,7 +108,8 @@ func initRPCServer() (*pb.ReviewServiceClient, *grpc.ClientConn, error) {
 
 func initRouter(producer *sarama.SyncProducer, client *pb.ReviewServiceClient) (router *mux.Router) {
 	router = mux.NewRouter()
-	router.Use(commonMiddleware)
+	// TODO : Causes Swagger UI to be parsed as JSON instead of html
+	// router.Use(commonMiddleware)
 
 	v1 := router.PathPrefix("/v1").Subrouter()
 

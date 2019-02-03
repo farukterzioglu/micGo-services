@@ -30,29 +30,23 @@ func (controller *QueryController) RegisterRoutes(r *mux.Router, p string) {
 
 	// swagger:route GET /review QueryAPI reviewList
 	// ---
-	// summary: Gets all reviews.
-	// description:
+	// Returns all reviews.
+	//
 	// responses:
-	//   "200":
-	//     "$ref": "#/responses/reviewsResp"
-	//   "404":
-	//     "$ref": "#/responses/notFound"
-	//   "500":
-	//     "$ref": "#/responses/internal"
+	//   200: reviewsResp
+	//   404: notFound
+	//	 500: internal
 	ur.HandleFunc("", controller.getReviews).Methods("GET")
 
 	// swagger:route GET /review/{ReviewID} QueryAPI getReviewReq
 	// ---
-	// summary: Gets a review.
-	// description:
+	// Returns a review by id.
+	// If the review id is null, Error Bad Request will be returned.
 	// responses:
-	//   "200":
-	//     "$ref": "#/responses/reviewResp"
-	//   "404":+
-	//     "$ref": "#/responses/notFound"
-	//   "500":
-	//     "$ref": "#/responses/internal"
-	ur.HandleFunc("", controller.getReview).Methods("GET")
+	//   200: reviewResp
+	//   404: notFound
+	//	 500: internal
+	ur.HandleFunc("/{ReviewID}", controller.getReview).Methods("GET")
 }
 
 func (controller *QueryController) getReview(w http.ResponseWriter, r *http.Request) {
@@ -75,9 +69,11 @@ func (controller *QueryController) getReview(w http.ResponseWriter, r *http.Requ
 	}
 
 	reviewDTO := dtos.ReviewDto{
-		ID:   review.ReviewID,
-		Text: review.Text,
-		Star: int8(review.Star),
+		ID:        review.ReviewID,
+		Text:      review.Text,
+		Star:      int8(review.Star),
+		ProductID: review.ProductID,
+		UserID:    review.UserID,
 	}
 
 	if err := json.NewEncoder(w).Encode(reviewDTO); err != nil {

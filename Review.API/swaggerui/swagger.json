@@ -26,20 +26,29 @@
   "paths": {
     "/review": {
       "get": {
-        "description": "description:",
         "tags": [
           "QueryAPI"
         ],
-        "summary": "summary: Gets all reviews.",
+        "summary": "Returns all reviews.",
         "operationId": "reviewList",
-        "responses": {}
+        "responses": {
+          "200": {
+            "$ref": "#/responses/reviewsResp"
+          },
+          "404": {
+            "$ref": "#/responses/notFound"
+          },
+          "500": {
+            "$ref": "#/responses/internal"
+          }
+        }
       },
       "put": {
-        "description": "description:",
+        "description": "Creates a 'create review commnand' and sends to Kafka",
         "tags": [
           "CommandAPI"
         ],
-        "summary": "summary: Creates a new review.",
+        "summary": "Creates a new review.",
         "operationId": "createReviewReq",
         "parameters": [
           {
@@ -47,16 +56,45 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/ReviewDto"
+              "$ref": "#/definitions/CreateReviewDto"
             }
           }
         ],
         "responses": {
-          "200": {
+          "202": {
             "$ref": "#/responses/ok"
           },
           "400": {
             "$ref": "#/responses/badReq"
+          }
+        }
+      }
+    },
+    "/review/{ReviewID}": {
+      "get": {
+        "description": "If the review id is null, Error Bad Request will be returned.",
+        "tags": [
+          "QueryAPI"
+        ],
+        "summary": "Returns a review by id.",
+        "operationId": "getReviewReq",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "ReviewID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/reviewResp"
+          },
+          "404": {
+            "$ref": "#/responses/notFound"
+          },
+          "500": {
+            "$ref": "#/responses/internal"
           }
         }
       }
@@ -86,7 +124,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "202": {
             "$ref": "#/responses/rateReviewResp"
           },
           "400": {
@@ -103,10 +141,38 @@
     }
   },
   "definitions": {
-    "ReviewDto": {
-      "description": "Review is a DTO for api requests",
+    "CreateReviewDto": {
+      "description": "CreateReviewDto is a DTO for api requests",
       "type": "object",
       "properties": {
+        "productid": {
+          "type": "string",
+          "x-go-name": "ProductID"
+        },
+        "star": {
+          "type": "integer",
+          "format": "int8",
+          "x-go-name": "Star"
+        },
+        "text": {
+          "type": "string",
+          "x-go-name": "Text"
+        }
+      },
+      "x-go-package": "github.com/farukterzioglu/micGo-services/Review.API/dtos"
+    },
+    "ReviewDto": {
+      "description": "ReviewDto is a DTO for api requests",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "x-go-name": "ID"
+        },
+        "productid": {
+          "type": "string",
+          "x-go-name": "ProductID"
+        },
         "star": {
           "type": "integer",
           "format": "int8",
@@ -275,25 +341,18 @@
         }
       }
     },
+    "reviewResp": {
+      "description": "HTTP status code 200 and a review model in data",
+      "schema": {
+        "$ref": "#/definitions/ReviewDto"
+      }
+    },
     "reviewsResp": {
       "description": "HTTP status code 200 and an array of review models in data",
       "schema": {
-        "type": "object",
-        "properties": {
-          "code": {
-            "description": "HTTP status code 200 - Status OK",
-            "type": "integer",
-            "format": "int64",
-            "x-go-name": "Code"
-          },
-          "data": {
-            "description": "Array of review models",
-            "type": "array",
-            "items": {
-              "$ref": "#/definitions/ReviewDto"
-            },
-            "x-go-name": "Data"
-          }
+        "type": "array",
+        "items": {
+          "$ref": "#/definitions/ReviewDto"
         }
       }
     }

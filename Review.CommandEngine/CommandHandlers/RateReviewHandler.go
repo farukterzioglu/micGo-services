@@ -36,7 +36,7 @@ func (handler *RateReviewHandler) HandleAsync(ctx context.Context, request Handl
 		return
 	}
 
-	fmt.Printf("Review (%d) rated with star : %d\n", rateReviewCommand.ReviewID, rateReviewCommand.Star)
+	fmt.Printf("Review (%s) rated with star : %d\n", rateReviewCommand.ReviewID, rateReviewCommand.Star)
 
 	request.HandlerResponse <- fmt.Sprintf("%v", rateReviewCommand.ReviewID)
 }

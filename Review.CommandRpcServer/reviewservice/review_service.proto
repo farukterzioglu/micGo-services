@@ -14,6 +14,8 @@ message Review {
     string Text = 1;
     int32 Star = 2;
     string ReviewID = 3;
+    string ProductID = 4;
+    string UserID = 5;
 }
 
 message NewReviewRequest {
@@ -33,7 +35,7 @@ message GetTopReviewsRequest {
 }
 
 message RateReviewRequest {
-    int32 reviewId = 1;
+    string reviewId = 1;
     int32 star = 2;
 }
 

@@ -34,10 +34,10 @@ func (routes *ReviewRoutes) RegisterReviewRoutes(r *mux.Router, p string) {
 
 	// swagger:route PUT /review CommandAPI createReviewReq
 	// ---
-	// summary: Creates a new review.
-	// description:
+	// Creates a new review.
+	// Creates a 'create review commnand' and sends to Kafka
 	// responses:
-	//   200: ok
+	//   202: ok
 	//   400: badReq
 	ur.HandleFunc("", routes.createReview).Methods("PUT")
 
@@ -46,28 +46,29 @@ func (routes *ReviewRoutes) RegisterReviewRoutes(r *mux.Router, p string) {
 	// summary: Rates the review.
 	// description: If the review id is null, Error Bad Request will be returned.
 	// responses:
-	//   "200":
+	//   "202":
 	//     "$ref": "#/responses/rateReviewResp"
 	//   "400":
 	//     "$ref": "#/responses/badReq"
 	//   "404":
-	//     "$ref": "#/responses/notFound"
+	//     "$ref": "#/responses/notFound"   
 	//   "500":
 	//     "$ref": "#/responses/internal"
 	ur.HandleFunc("/{ReviewID}/ratereview", routes.rateReview).Methods("POST")
 }
 
 func (routes *ReviewRoutes) createReview(w http.ResponseWriter, r *http.Request) {
-	var review dtos.ReviewDto
+	var review dtos.CreateReviewDto
 	_ = json.NewDecoder(r.Body).Decode(&review)
 
 	id, _ := uuid.NewRandom()
 	reviewID := id.String()
 	command := &commands.CreateReviewCommand{
 		Review: models.Review{
-			ID:   reviewID,
-			Text: review.Text,
-			Star: review.Star,
+			ID:        reviewID,
+			ProductID: review.ProductID,
+			Text:      review.Text,
+			Star:      review.Star,
 		},
 	}
 
@@ -101,7 +102,7 @@ func (routes *ReviewRoutes) createReview(w http.ResponseWriter, r *http.Request)
 	// TODO : Gives a warning : 'http: multiple response.WriteHeader calls'
 	w.Header().Set("Content-Location", "/review/"+reviewID)
 	json.NewEncoder(w).Encode(reviewID)
-	w.WriteHeader(http.StatusCreated)
+	w.WriteHeader(http.StatusAccepted)
 }
 
 func (routes *ReviewRoutes) rateReview(w http.ResponseWriter, r *http.Request) {
@@ -149,7 +150,7 @@ func (routes *ReviewRoutes) rateReview(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusCreated)
+	w.WriteHeader(http.StatusAccepted)
 }
 
 func publish(producer *sarama.SyncProducer, message []byte, key, topicName string) error {
