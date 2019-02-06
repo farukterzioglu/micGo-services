@@ -27,7 +27,7 @@ func (actor *UsersActor) Receive(context actor.Context) {
 		fmt.Printf("VerifyUserMessage %v\n", msg)
 
 		// TODO : Get data from source
-		time.Sleep(2 * time.Second)
+		time.Sleep(1 * time.Second)
 		context.Respond(&VerifyUserResponse{IsPermitted: true})
 	}
 }

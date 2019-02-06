@@ -25,14 +25,27 @@ func (reviewActor *ReviewActor) Receive(context actor.Context) {
 	case SaveReviewMessage:
 		fmt.Printf("SaveReviewMessage %v\n", msg)
 
-		// Verify if user bought the product
+		// Create actors
 		props := actor.FromProducer(NewOrdersActor)
 		ordersPid := context.Spawn(props)
 
+		usersProp := actor.FromProducer(NewUsersActor)
+		usersPid := context.Spawn(usersProp)
+
+		//// Send requests
+		// Verify if user bought the product
 		future := context.RequestFuture(ordersPid, &VerifyOrderMessage{
 			ProductID: msg.ProductID,
 			UserID:    msg.UserID,
 		}, 3*time.Second)
+
+		// Verify user
+		usersFuture := context.RequestFuture(usersPid, &VerifyUserMessage{
+			UserID: msg.UserID,
+		}, 3*time.Second)
+
+		//// Get results
+		// Get verify order result
 		result, err := future.Result()
 		if err != nil {
 			log.Print(err.Error())
@@ -40,20 +53,13 @@ func (reviewActor *ReviewActor) Receive(context actor.Context) {
 		}
 		fmt.Printf("Received %#v\n", result)
 
-		// Verify user
-		usersProp := actor.FromProducer(NewUsersActor)
-		usersPid := context.Spawn(usersProp)
-
-		usersFuture := context.RequestFuture(usersPid, &VerifyUserMessage{
-			UserID: msg.UserID,
-		}, 3*time.Second)
+		// Get verify user result
 		usersresult, err := usersFuture.Result()
 		if err != nil {
 			log.Print(err.Error())
 			return
 		}
 		fmt.Printf("Received %#v\n", usersresult)
-
 	}
 }
 
