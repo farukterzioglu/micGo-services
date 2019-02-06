@@ -2,13 +2,19 @@ package actors
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/AsynkronIT/protoactor-go/actor"
 )
 
-// VerifyUserMessage carries verification of user
+// VerifyUserMessage hold user id for verification
 type VerifyUserMessage struct {
 	UserID string
+}
+
+// VerifyUserResponse presents if user is permitted to comment
+type VerifyUserResponse struct {
+	IsPermitted bool
 }
 
 // UsersActor actor for order-user relation queries
@@ -17,8 +23,12 @@ type UsersActor struct{}
 // Receive ...
 func (actor *UsersActor) Receive(context actor.Context) {
 	switch msg := context.Message().(type) {
-	case VerifyUserMessage:
+	case *VerifyUserMessage:
 		fmt.Printf("VerifyUserMessage %v\n", msg)
+
+		// TODO : Get data from source
+		time.Sleep(2 * time.Second)
+		context.Respond(&VerifyUserResponse{IsPermitted: true})
 	}
 }
 

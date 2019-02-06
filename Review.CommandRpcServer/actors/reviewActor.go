@@ -2,6 +2,8 @@ package actors
 
 import (
 	"fmt"
+	"log"
+	"time"
 
 	"github.com/AsynkronIT/protoactor-go/actor"
 )
@@ -23,18 +25,35 @@ func (reviewActor *ReviewActor) Receive(context actor.Context) {
 	case SaveReviewMessage:
 		fmt.Printf("SaveReviewMessage %v\n", msg)
 
+		// Verify if user bought the product
 		props := actor.FromProducer(NewOrdersActor)
-		child := context.Spawn(props)
-		child.Tell(VerifyOrderMessage{
+		ordersPid := context.Spawn(props)
+
+		future := context.RequestFuture(ordersPid, &VerifyOrderMessage{
 			ProductID: msg.ProductID,
 			UserID:    msg.UserID,
-		})
+		}, 3*time.Second)
+		result, err := future.Result()
+		if err != nil {
+			log.Print(err.Error())
+			return
+		}
+		fmt.Printf("Received %#v\n", result)
 
+		// Verify user
 		usersProp := actor.FromProducer(NewUsersActor)
-		userschild := context.Spawn(usersProp)
-		userschild.Tell(VerifyUserMessage{
+		usersPid := context.Spawn(usersProp)
+
+		usersFuture := context.RequestFuture(usersPid, &VerifyUserMessage{
 			UserID: msg.UserID,
-		})
+		}, 3*time.Second)
+		usersresult, err := usersFuture.Result()
+		if err != nil {
+			log.Print(err.Error())
+			return
+		}
+		fmt.Printf("Received %#v\n", usersresult)
+
 	}
 }
 
