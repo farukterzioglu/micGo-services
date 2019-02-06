@@ -11,6 +11,7 @@ import (
 // ReviewActor ...
 type ReviewActor struct{}
 
+// SaveReviewMessage ...
 type SaveReviewMessage struct {
 	ID        string
 	ProductID string
