@@ -69,6 +69,7 @@ func (routes *ReviewRoutes) createReview(w http.ResponseWriter, r *http.Request)
 			ProductID: review.ProductID,
 			Text:      review.Text,
 			Star:      review.Star,
+			UserID :   review.UserID,
 		},
 	}
 

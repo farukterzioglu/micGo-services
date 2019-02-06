@@ -6,9 +6,7 @@ import (
 	"github.com/AsynkronIT/protoactor-go/actor"
 )
 
-type ReviewActor struct {
-	// ordersPid *actor.PID
-}
+type ReviewActor struct{}
 
 type SaveReviewMessage struct {
 	ID        string
@@ -18,17 +16,29 @@ type SaveReviewMessage struct {
 	Star      int8
 }
 
-func (actor *ReviewActor) Receive(context actor.Context) {
-
-	// TODO : Send to Orders actor to check for buyer
-	// TODO : Send to Users actor for review approval
+// Receive handles SaveReviewMessage, ... messages
+func (reviewActor *ReviewActor) Receive(context actor.Context) {
 
 	switch msg := context.Message().(type) {
 	case SaveReviewMessage:
-		fmt.Printf("Message %v\n", msg)
+		fmt.Printf("SaveReviewMessage %v\n", msg)
+
+		props := actor.FromProducer(NewOrdersActor)
+		child := context.Spawn(props)
+		child.Tell(VerifyOrderMessage{
+			ProductID: msg.ProductID,
+			UserID:    msg.UserID,
+		})
+
+		usersProp := actor.FromProducer(NewUsersActor)
+		userschild := context.Spawn(usersProp)
+		userschild.Tell(VerifyUserMessage{
+			UserID: msg.UserID,
+		})
 	}
 }
 
+// NewReviewActor return a ReviewActor instance
 func NewReviewActor() actor.Actor {
 	return &ReviewActor{}
 }

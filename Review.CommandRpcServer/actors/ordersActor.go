@@ -18,7 +18,7 @@ type OrdersActor struct{}
 func (actor *OrdersActor) Receive(context actor.Context) {
 	switch msg := context.Message().(type) {
 	case VerifyOrderMessage:
-		fmt.Printf("Messaage %v\n", msg)
+		fmt.Printf("VerifyOrderMessage %v\n", msg)
 	}
 }
 
