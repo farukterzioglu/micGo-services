@@ -8,6 +8,7 @@ import (
 	"github.com/AsynkronIT/protoactor-go/actor"
 )
 
+// ReviewActor ...
 type ReviewActor struct{}
 
 type SaveReviewMessage struct {
