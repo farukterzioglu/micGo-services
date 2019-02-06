@@ -19,7 +19,9 @@ type VerifyOrderResponse struct {
 }
 
 // OrdersActor actor for order-user relation queries
-type OrdersActor struct{}
+type OrdersActor struct {
+	mpOrdersPid *actor.PID
+}
 
 // Receive ...
 func (actor *OrdersActor) Receive(context actor.Context) {
@@ -27,13 +29,28 @@ func (actor *OrdersActor) Receive(context actor.Context) {
 	case *VerifyOrderMessage:
 		fmt.Printf("VerifyOrderMessage %v\n", msg)
 
+		actor.mpOrdersPid.
+			RequestFuture(msg, 4 * time.Second).
+			PipeTo(ctx.Self())
+	case *VerifyMPOrderMessage:
+		context.Respond(msg)
+	case struct{}:
 		// TODO : Get data from source
 		time.Sleep(2 * time.Second)
+		isAnOrder := true
+
+		if !isAnOrder {
+			context.Respond(&VerifyOrderResponse{IsPurchased: false})
+			return
+		}
+
 		context.Respond(&VerifyOrderResponse{IsPurchased: true})
 	}
 }
 
 // NewOrdersActor ...
-func NewOrdersActor() actor.Actor {
-	return &OrdersActor{}
+func NewOrdersActor(pid *actor.PID) actor.Actor {
+	return &OrdersActor{
+		mpOrdersPid: pid,
+	}
 }

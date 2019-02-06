@@ -26,7 +26,12 @@ func (reviewActor *ReviewActor) Receive(context actor.Context) {
 		fmt.Printf("SaveReviewMessage %v\n", msg)
 
 		// Create actors
-		props := actor.FromProducer(NewOrdersActor)
+		mpOrdersProps := actor.FromProducer(NewMPOrdersActor)
+		mpOrdersPid := context.Spawn(mpOrdersProps)
+
+		props := actor.FromFunc(func(ctx actor.Context) {
+			return NewOrdersActor(mpOrdersPid)
+		})
 		ordersPid := context.Spawn(props)
 
 		usersProp := actor.FromProducer(NewUsersActor)
