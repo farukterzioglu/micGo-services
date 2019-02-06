@@ -7,51 +7,36 @@ import (
 
 	"google.golang.org/grpc/metadata"
 
+	"github.com/AsynkronIT/protoactor-go/actor"
+	"github.com/farukterzioglu/micGo-services/Review.CommandRpcServer/actors"
 	pb "github.com/farukterzioglu/micGo-services/Review.CommandRpcServer/reviewservice"
 	"github.com/farukterzioglu/micGo-services/Review.Domain/Models"
 )
 
 // CommandServer for handling rpc commands
 type CommandServer struct {
+	reviewsPid *actor.PID
 }
 
 // NewCommandServer creates and return a CommandServer instance
-func NewCommandServer() *CommandServer {
-	s := &CommandServer{}
+func NewCommandServer(pid *actor.PID) *CommandServer {
+	s := &CommandServer{
+		reviewsPid: pid,
+	}
 	return s
 }
 
 // SaveReview handles SaveReview rpc command
 func (server *CommandServer) SaveReview(ctx context.Context, request *pb.NewReviewRequest) (*pb.ReviewId, error) {
-	review := models.Review{
+	server.reviewsPid.Tell(actors.SaveReviewMessage{
 		ID:        request.Review.ReviewID,
 		ProductID: request.Review.ProductID,
 		UserID:    request.Review.UserID,
 		Text:      request.Review.Text,
 		Star:      int8(request.Review.Star),
-	}
+	})
 
-	fmt.Printf("Created a new review : %v\n", review)
-
-	// TODO : Send to Orders actor to check for buyer
-
-	// TODO : Send to Users actor for review approval
-
-	// TODO : Test this
-	done := make(chan bool)
-	go func() {
-		// TODO : save the review
-		done <- true
-	}()
-
-	//for (
-	select {
-	case <-ctx.Done():
-		return nil, ctx.Err()
-	case <-done:
-		return &pb.ReviewId{ReviewId: "0"}, nil
-	}
-	//)
+	return &pb.ReviewId{ReviewId: request.Review.ReviewID}, nil
 }
 
 // SaveReviews handles SaveReviews rpc command

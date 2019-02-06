@@ -157,6 +157,10 @@
         "text": {
           "type": "string",
           "x-go-name": "Text"
+        },
+        "userid": {
+          "type": "string",
+          "x-go-name": "UserID"
         }
       },
       "x-go-package": "github.com/farukterzioglu/micGo-services/Review.API/dtos"
@@ -181,6 +185,10 @@
         "text": {
           "type": "string",
           "x-go-name": "Text"
+        },
+        "userid": {
+          "type": "string",
+          "x-go-name": "UserID"
         }
       },
       "x-go-package": "github.com/farukterzioglu/micGo-services/Review.API/dtos"
