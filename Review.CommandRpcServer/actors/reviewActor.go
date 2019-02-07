@@ -25,13 +25,13 @@ func (reviewActor *ReviewActor) Receive(context actor.Context) {
 
 	switch msg := context.Message().(type) {
 	case SaveReviewMessage:
-		fmt.Printf("SaveReviewMessage %v\n", msg)
+		fmt.Printf("ReviewActor -> SaveReviewMessage %v\n", msg)
 
 		// Create actors
 		mpOrdersProps := actor.FromProducer(NewMPOrdersActor)
 		mpOrdersPid := context.Spawn(mpOrdersProps)
 
-		props := actor.FromFunc(func(ctx actor.Context) {
+		props := actor.FromProducer(func() actor.Actor {
 			return NewOrdersActor(mpOrdersPid)
 		})
 		ordersPid := context.Spawn(props)
@@ -44,7 +44,7 @@ func (reviewActor *ReviewActor) Receive(context actor.Context) {
 		future := context.RequestFuture(ordersPid, &VerifyOrderMessage{
 			ProductID: msg.ProductID,
 			UserID:    msg.UserID,
-		}, 3*time.Second)
+		}, 5*time.Second)
 
 		// Verify user
 		usersFuture := context.RequestFuture(usersPid, &VerifyUserMessage{
@@ -58,7 +58,7 @@ func (reviewActor *ReviewActor) Receive(context actor.Context) {
 			log.Print(err.Error())
 			return
 		}
-		fmt.Printf("Received %#v\n", result)
+		fmt.Printf("ReviewActor -> Received %#v\n", result)
 
 		// Get verify user result
 		usersresult, err := usersFuture.Result()
@@ -66,7 +66,7 @@ func (reviewActor *ReviewActor) Receive(context actor.Context) {
 			log.Print(err.Error())
 			return
 		}
-		fmt.Printf("Received %#v\n", usersresult)
+		fmt.Printf("ReviewActor -> Received %#v\n", usersresult)
 	}
 }
 

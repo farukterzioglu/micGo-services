@@ -25,7 +25,7 @@ type MPOrdersActor struct{}
 func (actor *MPOrdersActor) Receive(context actor.Context) {
 	switch msg := context.Message().(type) {
 	case *VerifyMPOrderMessage:
-		fmt.Printf("VerifyMPOrderMessage %v\n", msg)
+		fmt.Printf("MPOrdersActor -> VerifyMPOrderMessage %v\n", msg)
 
 		// TODO : Get data from source
 		time.Sleep(time.Second)
@@ -36,7 +36,8 @@ func (actor *MPOrdersActor) Receive(context actor.Context) {
 			return
 		}
 
-		context.Respond(struct{}{})
+		fmt.Printf("MPOrdersActor -> Not a marketplace order.\n")
+		context.Respond(&VerifyMPOrderResponse{IsPurchased: false})
 	}
 }
 
