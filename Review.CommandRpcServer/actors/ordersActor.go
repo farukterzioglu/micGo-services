@@ -2,6 +2,7 @@ package actors
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/AsynkronIT/protoactor-go/actor"
@@ -27,16 +28,32 @@ type OrdersActor struct {
 func (actor *OrdersActor) Receive(context actor.Context) {
 	switch msg := context.Message().(type) {
 	case *VerifyOrderMessage:
-		fmt.Printf("VerifyOrderMessage %v\n", msg)
+		fmt.Printf("OrdersActor -> VerifyOrderMessage %v\n", msg)
 
-		actor.mpOrdersPid.
-			RequestFuture(msg, 4 * time.Second).
-			PipeTo(ctx.Self())
-	case *VerifyMPOrderMessage:
-		context.Respond(msg)
-	case struct{}:
+		// Verify from marketplace
+		request := &VerifyMPOrderMessage{
+			ProductID: msg.ProductID,
+			UserID:    msg.UserID,
+		}
+		future := actor.mpOrdersPid.RequestFuture(request, 4*time.Second)
+
+		futureResult, err := future.Result()
+		if err != nil {
+			log.Print(err.Error())
+			return
+		}
+
+		var mpResult *VerifyMPOrderResponse
+		mpResult = futureResult.(*VerifyMPOrderResponse)
+
+		if mpResult.IsPurchased {
+			fmt.Printf("OrdersActor -> Verified from market place.\n")
+			context.Respond(&VerifyOrderResponse{IsPurchased: true})
+			return
+		}
+
+		// Verify non-marketplace product
 		// TODO : Get data from source
-		time.Sleep(2 * time.Second)
 		isAnOrder := true
 
 		if !isAnOrder {
