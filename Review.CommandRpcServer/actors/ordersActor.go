@@ -2,8 +2,6 @@ package actors
 
 import (
 	"fmt"
-	"log"
-	"time"
 
 	"github.com/AsynkronIT/protoactor-go/actor"
 )
@@ -30,44 +28,30 @@ func (actor *OrdersActor) Receive(context actor.Context) {
 	case *VerifyOrderMessage:
 		fmt.Printf("OrdersActor -> VerifyOrderMessage %v\n", msg)
 
-		// Verify from marketplace
 		request := &VerifyMPOrderMessage{
 			ProductID: msg.ProductID,
 			UserID:    msg.UserID,
 		}
-		future := actor.mpOrdersPid.RequestFuture(request, 4*time.Second)
-
-		futureResult, err := future.Result()
-		if err != nil {
-			log.Print(err.Error())
-			return
-		}
-
-		var mpResult *VerifyMPOrderResponse
-		mpResult = futureResult.(*VerifyMPOrderResponse)
-
-		if mpResult.IsPurchased {
-			fmt.Printf("OrdersActor -> Verified from market place.\n")
-			context.Respond(&VerifyOrderResponse{IsPurchased: true})
-			return
-		}
+		actor.mpOrdersPid.Request(request, context.Self())
+	case *NotVerifiedByMarketPlace:
+		fmt.Printf("OrdersActor -> NotVerifiedByMarketPlace %v\n", msg)
 
 		// Verify non-marketplace product
 		// TODO : Get data from source
 		isAnOrder := true
 
-		if !isAnOrder {
-			context.Respond(&VerifyOrderResponse{IsPurchased: false})
+		if isAnOrder {
+			context.Respond(&VerifyOrderResponse{IsPurchased: true})
 			return
 		}
-
+		context.Respond(&VerifyOrderResponse{IsPurchased: false})
+	case *VerifiedByMarketPlace:
+		fmt.Printf("OrdersActor -> VerifiedByMarketPlace %v\n", msg)
 		context.Respond(&VerifyOrderResponse{IsPurchased: true})
 	}
 }
 
 // NewOrdersActor ...
 func NewOrdersActor(pid *actor.PID) actor.Actor {
-	return &OrdersActor{
-		mpOrdersPid: pid,
-	}
+	return &OrdersActor{mpOrdersPid: pid}
 }

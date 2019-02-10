@@ -13,10 +13,11 @@ type VerifyMPOrderMessage struct {
 	UserID    string
 }
 
-// VerifyMPOrderResponse ..
-type VerifyMPOrderResponse struct {
-	IsPurchased bool
-}
+// NotVerifiedByMarketPlace ...
+type NotVerifiedByMarketPlace struct{}
+
+// VerifiedByMarketPlace ...
+type VerifiedByMarketPlace struct{}
 
 // MPOrdersActor actor for order-user relation queries
 type MPOrdersActor struct{}
@@ -32,12 +33,12 @@ func (actor *MPOrdersActor) Receive(context actor.Context) {
 
 		// TODO : Check if it is MarketPlace order
 		if msg.ProductID == "111" {
-			context.Respond(&VerifyMPOrderResponse{IsPurchased: true})
+			context.Sender().Tell(&VerifiedByMarketPlace{})
 			return
 		}
 
 		fmt.Printf("MPOrdersActor -> Not a marketplace order.\n")
-		context.Respond(&VerifyMPOrderResponse{IsPurchased: false})
+		context.Sender().Tell(&NotVerifiedByMarketPlace{})
 	}
 }
 
