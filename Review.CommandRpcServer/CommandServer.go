@@ -14,28 +14,34 @@ import (
 )
 
 // CommandServer for handling rpc commands
-type CommandServer struct {
-	reviewsPid *actor.PID
-}
+type CommandServer struct {}
 
 // NewCommandServer creates and return a CommandServer instance
-func NewCommandServer(pid *actor.PID) *CommandServer {
-	s := &CommandServer{
-		reviewsPid: pid,
-	}
+func NewCommandServer() *CommandServer {
+	s := &CommandServer{}
 	return s
 }
 
 // SaveReview handles SaveReview rpc command
 func (server *CommandServer) SaveReview(ctx context.Context, request *pb.NewReviewRequest) (*pb.ReviewId, error) {
-	server.reviewsPid.Tell(actors.SaveReviewMessage{
-		ID:        request.Review.ReviewID,
-		ProductID: request.Review.ProductID,
-		UserID:    request.Review.UserID,
-		Text:      request.Review.Text,
-		Star:      int8(request.Review.Star),
-	})
+	chn := make(chan interface{})
 
+	props := actor.FromProducer(func() actor.Actor {
+		reviewActor := actors.ReviewActor{
+			ID:          request.Review.ReviewID,
+			ProductID:   request.Review.ProductID,
+			UserID:      request.Review.UserID,
+			Text:        request.Review.Text,
+			Star:        int8(request.Review.Star),
+			ResponseChn: chn,
+		}
+		return &reviewActor
+	})
+	reviewsPid := actor.Spawn(props)
+	reviewsPid.Tell(actors.SaveReviewMessage{})
+
+	result := <-chn
+	fmt.Printf("ReviewActor -> VerifyUserResponse %v\n", result)
 	return &pb.ReviewId{ReviewId: request.Review.ReviewID}, nil
 }
 

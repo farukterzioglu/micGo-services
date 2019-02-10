@@ -2,32 +2,32 @@ package actors
 
 import (
 	"fmt"
-	"log"
-	"time"
 
 	"github.com/AsynkronIT/protoactor-go/actor"
 )
 
 // ReviewActor ...
-type ReviewActor struct{}
+type ReviewActor struct {
+	ID          string
+	ProductID   string
+	UserID      string
+	Text        string
+	Star        int8
+	ResponseChn chan<- interface{}
+
+	isVerified     bool
+	isUserVerified bool
+}
 
 // SaveReviewMessage ...
-type SaveReviewMessage struct {
-	ID        string
-	ProductID string
-	UserID    string
-	Text      string
-	Star      int8
-}
+type SaveReviewMessage struct{}
 
 // Receive handles SaveReviewMessage, ... messages
 func (reviewActor *ReviewActor) Receive(context actor.Context) {
-
 	switch msg := context.Message().(type) {
 	case SaveReviewMessage:
 		fmt.Printf("ReviewActor -> SaveReviewMessage %v\n", msg)
 
-		// Create actors
 		mpOrdersProps := actor.FromProducer(NewMPOrdersActor)
 		mpOrdersPid := context.Spawn(mpOrdersProps)
 
@@ -36,41 +36,30 @@ func (reviewActor *ReviewActor) Receive(context actor.Context) {
 		})
 		ordersPid := context.Spawn(props)
 
+		context.Request(ordersPid, &VerifyOrderMessage{
+			ProductID: reviewActor.ProductID,
+			UserID:    reviewActor.UserID,
+		})
+	case VerifyOrderResponse:
+		fmt.Printf("ReviewActor -> VerifyOrderResponse %v\n", msg)
+		reviewActor.isVerified = msg.IsPurchased
+
 		usersProp := actor.FromProducer(NewUsersActor)
 		usersPid := context.Spawn(usersProp)
 
-		//// Send requests
-		// Verify if user bought the product
-		future := context.RequestFuture(ordersPid, &VerifyOrderMessage{
-			ProductID: msg.ProductID,
-			UserID:    msg.UserID,
-		}, 5*time.Second)
+		context.Request(usersPid, &VerifyUserMessage{
+			UserID: reviewActor.UserID,
+		})
+	case VerifyUserResponse:
+		fmt.Printf("ReviewActor -> VerifyUserResponse %v\n", msg)
+		reviewActor.isUserVerified = msg.IsPermitted
 
-		// Verify user
-		usersFuture := context.RequestFuture(usersPid, &VerifyUserMessage{
-			UserID: msg.UserID,
-		}, 3*time.Second)
-
-		//// Get results
-		// Get verify order result
-		result, err := future.Result()
-		if err != nil {
-			log.Print(err.Error())
-			return
+		reviewActor.ResponseChn <- struct {
+			IsVerified     bool
+			IsUserVerified bool
+		}{
+			IsVerified:     reviewActor.isVerified,
+			IsUserVerified: reviewActor.isUserVerified,
 		}
-		fmt.Printf("ReviewActor -> Received %#v\n", result)
-
-		// Get verify user result
-		usersresult, err := usersFuture.Result()
-		if err != nil {
-			log.Print(err.Error())
-			return
-		}
-		fmt.Printf("ReviewActor -> Received %#v\n", usersresult)
 	}
-}
-
-// NewReviewActor return a ReviewActor instance
-func NewReviewActor() actor.Actor {
-	return &ReviewActor{}
 }
