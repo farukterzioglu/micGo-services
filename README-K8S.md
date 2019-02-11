@@ -42,7 +42,8 @@ kubectl run topiccreation --image=ches/kafka --env="ZOOKEEPER_IP=10.100.165.232"
 # Deploy Review api
 
 docker build -f .\build\Review.API\Dockerfile -t review-api:latest .  
-kubectl get services
+kubectl get services  
+kubectl create -f .\build\Review.API\deployment.yaml
 
 # Util.
 
