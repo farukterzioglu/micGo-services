@@ -3,10 +3,17 @@ FROM golang:1.10.1 AS builder
 RUN set -x && \
     go get github.com/Shopify/sarama && \
     go get github.com/gorilla/mux && \
-    go get github.com/go-swagger/go-swagger/cmd/swagger
+    go get github.com/go-swagger/go-swagger/cmd/swagger && \
+    go get github.com/golang/protobuf/proto && \
+    go get google.golang.org/grpc
+
+# TODO : Get all deps
+RUN set -x && \
+    go get github.com/google/uuid 
 
 COPY ./Review.Domain /go/src/github.com/farukterzioglu/micGo-services/Review.Domain/
 COPY ./Review.API /go/src/github.com/farukterzioglu/micGo-services/Review.API/
+COPY ./Review.CommandRpcServer /go/src/github.com/farukterzioglu/micGo-services/Review.CommandRpcServer/
 
 WORKDIR /go/src/github.com/farukterzioglu/micGo-services/Review.API/ 
 

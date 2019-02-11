@@ -1,0 +1,20 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: review-api
+spec:
+  # TODO : parameterize the replices, like -> replicas: ${PODS}
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: review-api
+    spec:
+      containers:
+        - name: review-api
+          image: review-api:latest
+          ports:
+            - containerPort: 8000
+          args: ["kafka_brokers", "10.105.8.143:9092"]
+      imagePullSecrets:
+        - name: regcred
