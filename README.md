@@ -1,4 +1,4 @@
-For Kubernetes setup, see [README-K8S](README-K8S)
+For Kubernetes setup, see [README-K8S](README-K8S.md)
 
 ### Start Kafka & Zookeper w/ docker-compose
 
