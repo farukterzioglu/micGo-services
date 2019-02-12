@@ -3,7 +3,6 @@ kind: Deployment
 metadata:
   name: review-api
 spec:
-  # TODO : parameterize the replices, like -> replicas: ${PODS}
   replicas: 1
   template:
     metadata:
@@ -15,6 +14,5 @@ spec:
           image: review-api:latest
           ports:
             - containerPort: 8000
-          args: ["kafka_brokers", "10.105.8.143:9092"]
-      imagePullSecrets:
-        - name: regcred
+          imagePullPolicy: IfNotPresent
+          args: ["-kafka_brokers=kafka:9092"]

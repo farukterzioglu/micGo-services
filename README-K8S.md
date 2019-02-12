@@ -1,55 +1,86 @@
-# Install dashboard
+### Install dashboard
 
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v1.10.1/src/deploy/recommended/kubernetes-dashboard.yaml
+`kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v1.10.1/src/deploy/recommended/kubernetes-dashboard.yaml`
 
-# Additional features
+### Additional features
 
-kubectl create -f https://raw.githubusercontent.com/kubernetes/heapster/master/deploy/kube-config/influxdb/influxdb.yaml  
-kubectl create -f https://raw.githubusercontent.com/kubernetes/heapster/master/deploy/kube-config/influxdb/heapster.yaml  
+```
+kubectl create -f https://raw.githubusercontent.com/kubernetes/heapster/master/deploy/kube-config/influxdb/influxdb.yaml
+kubectl create -f https://raw.githubusercontent.com/kubernetes/heapster/master/deploy/kube-config/influxdb/heapster.yaml
 kubectl create -f https://raw.githubusercontent.com/kubernetes/heapster/master/deploy/kube-config/influxdb/grafana.yaml
+```
 
-# Starting dashboard
+### Starting dashboard
 
-kubectl proxy
+`kubectl proxy`
 
-# Navigate to dashboard
+### Navigate to dashboard
 
 http://localhost:8001/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/#!/namespace?namespace=default
 
-# Getting token
+### Getting token
 
-kubectl -n kube-system get secret  
+```
+kubectl -n kube-system get secret
 kubectl -n kube-system describe secrets replicaset-controller-token-btkvl
+```
 
-# Start zookeper
+### Start zookeper
 
-kubectl run zookeeper --image=zookeeper:3.4 --port=2181  
-kubectl expose deployment zookeeper --type=NodePort  
-kubectl get services (get zookeper ip)
+```
+kubectl apply -f .\build\Kafka\deployment-zookeeper.yaml
+kubectl apply -f .\build\Kafka\service-zookeeper.yaml
+```
 
-# Start kafka
+Or
 
-kubectl run kafka --image=ches/kafka --port=7203 --port=9092 --env="KAFKA_MESSAGE_MAX_BYTES=3000000" --env="KAFKA_REPLICA_FETCH_MAX_BYTES=3100000" --env="ZOOKEEPER_IP=10.100.165.232" --env="KAFKA_ADVERTISED_HOST_NAME=172.24.96.1"  
-kubectl get pods  
-kubectl logs kafka-698855978-2wnhl  
+```
+kubectl run zookeeper --image=zookeeper:3.4 --port=2181
+kubectl expose deployment zookeeper --type=NodePort
+kubectl get services (for info)
+```
+
+### Start kafka
+
+```
+kubectl apply -f .\build\Kafka\deployment-kafka.yaml
+kubectl apply -f .\build\Kafka\service-kafka.yaml
+```
+
+Or
+
+```
+kubectl run kafka --image=ches/kafka --port=7203 --port=9092 --env="KAFKA_MESSAGE_MAX_BYTES=3000000" --env="KAFKA_REPLICA_FETCH_MAX_BYTES=3100000" --env="ZOOKEEPER_IP=zookeeper" --env="KAFKA_PORT=9092"
+kubectl get pods
+kubectl logs [kafka-***] (for info)
 kubectl expose deployment kafka --type=NodePort
+kubectl get services (for info)
+```
 
-# Create topic
+### Create topic
 
-// TODO : Run once commands ???  
-kubectl run topiccreation --image=ches/kafka --env="ZOOKEEPER_IP=10.100.165.232" --command -- sh -c "sleep 5 && kafka-topics.sh --create --topic review-commands --replication-factor 1 --partitions 1 --zookeeper 10.100.165.232:2181"
+This part is not required. Topic creation is done by environment parameter while deploying Kafka.  
+// TODO : Learn how to run this command once  
+`kubectl run topiccreation --image=ches/kafka --env="ZOOKEEPER_IP=10.100.165.232" --command -- sh -c "sleep 5 && kafka-topics.sh --create --topic review-commands --replication-factor 1 --partitions 1 --zookeeper 10.100.165.232:2181"`
 
-# Deploy Review api
+### Deploy Review api
 
-docker build -f .\build\Review.API\Dockerfile -t review-api:latest .  
-kubectl get services  
-kubectl create -f .\build\Review.API\deployment.yaml
+```
+docker build -f .\build\Review.API\Dockerfile -t review-api:latest .
+kubectl apply -f .\build\Review.API\deployment.yaml
+kubectl apply -f .\build\Review.API\service.yaml
 
-# Util.
+kubectl get services // for checking details
+```
 
-kubectl delete deployments [deploymebnt_name]
+Navigate to http://localhost:31115/swaggerui/
 
-NOTES  
+### Some helper codes
+
+`kubectl delete deployments [deployment_name]`
+
+### Notes
+
 https://www.hanselman.com/blog/HowToSetUpKubernetesOnWindows10WithDockerForWindowsAndRunASPNETCore.aspx  
 https://github.com/kubernetes/dashboard/wiki/Access-control  
 https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/
