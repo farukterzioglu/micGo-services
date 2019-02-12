@@ -50,6 +50,7 @@ var (
 func main() {
 	flag.Parse()
 	fmt.Printf("Broker address : %s\n", *kafkaBrokers)
+	fmt.Printf("RPC server address : %s\n", *serverAddr)
 
 	// Init Kafka producer
 	// TODO : Retry + fail over

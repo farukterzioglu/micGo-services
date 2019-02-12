@@ -1,9 +1,11 @@
-# Start Kafka & Zookeper w/ docker-compose
+For Kubernetes setup, see [README-K8S](README-K8S.md)
+
+### Start Kafka & Zookeper w/ docker-compose
 
 Start Zookeper & Kafka, create topics "create-review", "rate-review"  
 `docker-compose up`
 
-# Start Kafka & Zookeper
+### Start Kafka & Zookeper
 
 https://github.com/ches/docker-kafka
 
@@ -24,7 +26,7 @@ docker run --rm ches/kafka kafka-console-consumer.sh --topic create-review --fro
 docker run --rm --interactive ches/kafka kafka-consumer-groups.sh --new-consumer --describe --group group1 --bootstrap-server (\$ipAddress + ':9092')
 ```
 
-# Check kafka instance details
+### Check kafka instance details
 
 ```
 docker exec -it zookeeper bash
@@ -34,7 +36,7 @@ ls /brokers/topics
 ls /consumers
 ```
 
-# Command Engine
+### Command Engine
 
 Reads from kafka topic and handles commands (new comment etc.) in go routines
 
@@ -45,7 +47,7 @@ docker build -f .\build\Review.CommandEngine\Dockerfile -t command-engine:latest
 docker run -it command-engine:latest
 ```
 
-# Command Rpc Server
+### Command Rpc Server
 
 Handles rpc commands
 
@@ -56,7 +58,7 @@ docker build -f .\build\Review.CommandRpcServer\Dockerfile -t command-rpcserver:
 docker run -it -p 10000:10000 command-rpcserver:latest
 ```
 
-# Review api
+### Review api
 
 ```
 cd .\Review.API
