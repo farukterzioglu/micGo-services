@@ -1,0 +1,17 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: command-rpcserver
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: command-rpcserver
+    spec:
+      containers:
+        - name: command-rpcserver
+          image: command-rpcserver:latest
+          ports:
+            - containerPort: 3000
+          imagePullPolicy: IfNotPresent

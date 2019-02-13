@@ -13,7 +13,6 @@ spec:
         - name: kafka
           image: ches/kafka
           ports:
-            - containerPort: 7203
             - containerPort: 9092
           env:
             - name: KAFKA_MESSAGE_MAX_BYTES
