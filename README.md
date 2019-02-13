@@ -2,7 +2,7 @@ For Kubernetes setup, see [README-K8S](README-K8S.md)
 
 ### Start Kafka & Zookeper w/ docker-compose
 
-Start Zookeper & Kafka, create topics "create-review", "rate-review"  
+Start Zookeper & Kafka, create topics "create-review"  
 `docker-compose up`
 
 ### Start Kafka & Zookeper
@@ -55,17 +55,17 @@ Handles rpc commands
 go run .
 
 docker build -f .\build\Review.CommandRpcServer\Dockerfile -t command-rpcserver:latest .
-docker run -it -p 10000:10000 command-rpcserver:latest
+docker run -it -p 3000:3000 command-rpcserver:latest
 ```
 
 ### Review api
 
 ```
 cd .\Review.API
-go run . -kafka_brokers='127.0.0.1:9092' -server_addr="localhost:10000"
+go run . -kafka_brokers='127.0.0.1:9092' -server_addr="localhost:3000"
 
 docker build -f .\build\Review.API\Dockerfile -t review-api:latest .
-docker run -it -p 8000:8000 review-api:latest -kafka_brokers="[PUT-YOUR-HOST-IP]:9092"
+docker run -it -p 8000:8000 review-api:latest -kafka_brokers="localhost:9092" -server_addr="localhost:3000"
 
 // Navigate to http://localhost:8000/swaggerui/
 ```

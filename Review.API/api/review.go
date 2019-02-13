@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/Shopify/sarama"
@@ -170,6 +171,6 @@ func publish(producer *sarama.SyncProducer, message []byte, key, topicName strin
 		return err
 	}
 
-	fmt.Printf("Delivered %s[part:%d] (@%d) (key:%s) - %s\n", topicName, p, o, msg.Key, message)
+	log.Printf("Delivered %s[part:%d] (@%d) (key:%s) - %s\n", topicName, p, o, msg.Key, value)
 	return nil
 }

@@ -57,11 +57,13 @@ kubectl expose deployment kafka --type=NodePort
 kubectl get services (for info)
 ```
 
-### Create topic
+### Deploy RPC Server
 
-This part is not required. Topic creation is done by environment parameter while deploying Kafka.  
-// TODO : Learn how to run this command once  
-`kubectl run topiccreation --image=ches/kafka --env="ZOOKEEPER_IP=10.100.165.232" --command -- sh -c "sleep 5 && kafka-topics.sh --create --topic review-commands --replication-factor 1 --partitions 1 --zookeeper 10.100.165.232:2181"`
+```
+docker build -f .\build\Review.CommandRpcServer\Dockerfile -t command-rpcserver:latest .
+kubectl apply -f .\build\Review.CommandRpcServer\deployment.yaml
+kubectl apply -f .\build\Review.CommandRpcServer\service.yaml
+```
 
 ### Deploy Review api
 
@@ -71,6 +73,8 @@ kubectl apply -f .\build\Review.API\deployment.yaml
 kubectl apply -f .\build\Review.API\service.yaml
 
 kubectl get services // for checking details
+kubectl get pods
+kubectl attach review-api-[****]
 ```
 
 Navigate to http://localhost:31115/swaggerui/
@@ -78,6 +82,8 @@ Navigate to http://localhost:31115/swaggerui/
 ### Some helper codes
 
 `kubectl delete deployments [deployment_name]`
+`kubectl run topiccreation --image=ches/kafka --env="ZOOKEEPER_IP=10.100.165.232" --command -- sh -c "sleep 5 && kafka-topics.sh --create --topic review-commands --replication-factor 1 --partitions 1 --zookeeper 10.100.165.232:2181"`
+`kubectl attach POD_NAME`
 
 ### Notes
 
