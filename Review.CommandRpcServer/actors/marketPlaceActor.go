@@ -1,7 +1,7 @@
 package actors
 
 import (
-	"fmt"
+	"log"
 	"time"
 
 	"github.com/AsynkronIT/protoactor-go/actor"
@@ -14,7 +14,10 @@ type VerifyMPOrderMessage struct {
 }
 
 // NotVerifiedByMarketPlace ...
-type NotVerifiedByMarketPlace struct{}
+type NotVerifiedByMarketPlace struct {
+	ProductID string
+	UserID    string
+}
 
 // VerifiedByMarketPlace ...
 type VerifiedByMarketPlace struct{}
@@ -26,7 +29,7 @@ type MPOrdersActor struct{}
 func (actor *MPOrdersActor) Receive(context actor.Context) {
 	switch msg := context.Message().(type) {
 	case *VerifyMPOrderMessage:
-		fmt.Printf("MPOrdersActor -> VerifyMPOrderMessage %v\n", msg)
+		log.Printf("MPOrdersActor -> VerifyMPOrderMessage %v\n", msg)
 
 		// TODO : Get data from source
 		time.Sleep(time.Second)
@@ -37,7 +40,7 @@ func (actor *MPOrdersActor) Receive(context actor.Context) {
 			return
 		}
 
-		fmt.Printf("MPOrdersActor -> Not a marketplace order.\n")
+		log.Printf("MPOrdersActor -> Not a marketplace order.\n")
 		context.Sender().Tell(&NotVerifiedByMarketPlace{})
 	}
 }

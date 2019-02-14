@@ -128,21 +128,21 @@ func main() {
 				select {
 				case resp := <-request.ResponseCh:
 					returnValue := resp.(string)
-					fmt.Printf("Review id : %s\n", returnValue)
+					log.Printf("Review id : %s\n", returnValue)
 					// reviewID := models.ReviewIDFromContext(ctx)
 					// fmt.Printf("Review id from context: %s\n", reviewID)
 					break Completed
 				case err := <-request.ErrCh:
-					fmt.Printf("Request failed : %s\n", err.Error())
+					log.Printf("Request failed : %s\n", err.Error())
 					// TODO : Retry
 					failedMsgChn <- msg
 					break Completed
 				case <-ctx.Done():
-					fmt.Printf("Request failed : %s\n", ctx.Err())
+					log.Printf("Request canceled : %s\n", ctx.Err())
 					failedMsgChn <- msg
 					break Completed
 				case <-time.After(time.Minute):
-					fmt.Printf("Request timedout!\n")
+					log.Printf("Request timedout!\n")
 					failedMsgChn <- msg
 					cancel()
 					break Completed

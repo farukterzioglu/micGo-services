@@ -3,11 +3,14 @@ package commandhandlers
 import (
 	"context"
 	"fmt"
+	"log"
 
+	"github.com/afex/hystrix-go/hystrix"
 	pb "github.com/farukterzioglu/micGo-services/Review.CommandRpcServer/reviewservice"
 	"github.com/farukterzioglu/micGo-services/Review.Domain/Commands/V1"
 	"github.com/farukterzioglu/micGo-services/Review.Domain/Models"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 )
 
 // CreateReviewHandler is the handler for CreateReview command
@@ -17,6 +20,8 @@ type CreateReviewHandler struct {
 
 // NewCreateReviewHandler creates and returns new 'create review' command handler
 func NewCreateReviewHandler(c *pb.ReviewServiceClient) *CreateReviewHandler {
+	hystrix.ConfigureCommand("save-review-rpc", hystrix.CommandConfig{Timeout: 5000})
+
 	return &CreateReviewHandler{
 		client: *c,
 	}
@@ -45,14 +50,23 @@ func (handler *CreateReviewHandler) HandleAsync(ctx context.Context, request Han
 	)
 	// metadata.AppendToOutgoingContext(ctx, "key", "value")
 
-	response, err := handler.client.SaveReview(ctx, populateRPCCommand(&createReviewCommand.Review))
-	if err != nil {
+	hystrix.Go("save-review-rpc", func() error {
+		response, err := handler.client.SaveReview(ctx, populateRPCCommand(&createReviewCommand.Review))
+		if err != nil {
+			return err
+		}
+
+		fmt.Printf("Created a review with id : %s \n", response.ReviewId)
+		ctx = models.NewContextWithReviewID(ctx, response.ReviewId)
+
+		request.HandlerResponse <- response.ReviewId
+
+		return nil
+	}, func(err error) error {
+		errStatus, _ := status.FromError(err)
+		log.Printf("rpc error : %v\n", errStatus)
+
 		request.ErrResponse <- err
-		return
-	}
-
-	fmt.Printf("Created a review with id : %s \n", response.ReviewId)
-
-	ctx = models.NewContextWithReviewID(ctx, response.ReviewId)
-	request.HandlerResponse <- response.ReviewId
+		return nil
+	})
 }

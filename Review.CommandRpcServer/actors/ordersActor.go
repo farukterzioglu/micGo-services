@@ -1,7 +1,7 @@
 package actors
 
 import (
-	"fmt"
+	"log"
 
 	"github.com/AsynkronIT/protoactor-go/actor"
 )
@@ -19,6 +19,7 @@ type VerifyOrderResponse struct {
 
 // OrdersActor actor for order-user relation queries
 type OrdersActor struct {
+	reviewPid   *actor.PID
 	mpOrdersPid *actor.PID
 }
 
@@ -26,7 +27,7 @@ type OrdersActor struct {
 func (actor *OrdersActor) Receive(context actor.Context) {
 	switch msg := context.Message().(type) {
 	case *VerifyOrderMessage:
-		fmt.Printf("OrdersActor -> VerifyOrderMessage %v\n", msg)
+		log.Printf("OrdersActor -> VerifyOrderMessage %v\n", msg)
 
 		request := &VerifyMPOrderMessage{
 			ProductID: msg.ProductID,
@@ -34,24 +35,29 @@ func (actor *OrdersActor) Receive(context actor.Context) {
 		}
 		actor.mpOrdersPid.Request(request, context.Self())
 	case *NotVerifiedByMarketPlace:
-		fmt.Printf("OrdersActor -> NotVerifiedByMarketPlace %v\n", msg)
+		log.Printf("OrdersActor -> NotVerifiedByMarketPlace %v\n", msg)
 
 		// Verify non-marketplace product
-		// TODO : Get data from source
-		isAnOrder := true
+		// TODO : How to propagate error
+		isAnOrder, _ := verifyOrder(msg.ProductID, msg.UserID)
 
 		if isAnOrder {
-			context.Respond(&VerifyOrderResponse{IsPurchased: true})
+			actor.reviewPid.Tell(&VerifyOrderResponse{IsPurchased: true})
 			return
 		}
-		context.Respond(&VerifyOrderResponse{IsPurchased: false})
+		actor.reviewPid.Tell(&VerifyOrderResponse{IsPurchased: false})
 	case *VerifiedByMarketPlace:
-		fmt.Printf("OrdersActor -> VerifiedByMarketPlace %v\n", msg)
-		context.Respond(&VerifyOrderResponse{IsPurchased: true})
+		log.Printf("OrdersActor -> VerifiedByMarketPlace %v\n", msg)
+		actor.reviewPid.Tell(&VerifyOrderResponse{IsPurchased: true})
 	}
 }
 
+func verifyOrder(productID string, userID string) (bool, error) {
+	// TODO : Get data from source
+	return true, nil
+}
+
 // NewOrdersActor ...
-func NewOrdersActor(pid *actor.PID) actor.Actor {
-	return &OrdersActor{mpOrdersPid: pid}
+func NewOrdersActor(pid *actor.PID, rPid *actor.PID) actor.Actor {
+	return &OrdersActor{mpOrdersPid: pid, reviewPid: rPid}
 }

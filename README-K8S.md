@@ -79,6 +79,13 @@ kubectl attach review-api-[****]
 
 Navigate to http://localhost:31115/swaggerui/
 
+### Deploy Command Engine
+
+```
+docker build -f .\build\Review.CommandEngine\Dockerfile -t command-engine:latest .
+kubectl apply -f .\build\Review.CommandEngine\deployment.yaml
+```
+
 ### Some helper codes
 
 `kubectl delete deployments [deployment_name]`
