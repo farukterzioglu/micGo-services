@@ -87,7 +87,7 @@ func main() {
 	failedMsgChn := make(chan *sarama.ConsumerMessage)
 	go func(failedMsgCh chan *sarama.ConsumerMessage) {
 		for msg := range failedMsgChn {
-			fmt.Printf("Message failed : %s\n", msg.Value)
+			log.Printf("Message failed : %s\n", msg.Value)
 			// TODO : Process failed messages again
 		}
 	}(failedMsgChn)

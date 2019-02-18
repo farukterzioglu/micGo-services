@@ -38,6 +38,7 @@ import (
 	"github.com/farukterzioglu/micGo-services/Review.API/api"
 	_ "github.com/farukterzioglu/micGo-services/Review.API/swagger" // Required for Swagger to explore models
 	pb "github.com/farukterzioglu/micGo-services/Review.CommandRpcServer/reviewservice"
+	kitlog "github.com/go-kit/kit/log"
 	"github.com/gorilla/mux"
 	"google.golang.org/grpc"
 )
@@ -45,12 +46,21 @@ import (
 var (
 	kafkaBrokers = flag.String("kafka_brokers", "localhost:9092", "The kafka broker address in the format of host:port")
 	serverAddr   = flag.String("server_addr", "localhost:10000", "The rpc server address in the format of host:port")
+	portNumber   = flag.String("port", "8000", "HTTP listen port")
 )
 
 func main() {
+	// Logging domain.
+	var logger kitlog.Logger
+	{
+		logger = kitlog.NewLogfmtLogger(os.Stderr)
+		logger = kitlog.With(logger, "ts", kitlog.DefaultTimestampUTC)
+		logger = kitlog.With(logger, "caller", kitlog.DefaultCaller)
+	}
+
 	flag.Parse()
-	fmt.Printf("Broker address : %s\n", *kafkaBrokers)
-	fmt.Printf("RPC server address : %s\n", *serverAddr)
+	logger.Log("Broker address", *kafkaBrokers)
+	logger.Log("RPC server address", *serverAddr)
 
 	// Init Kafka producer
 	// TODO : Retry + fail over
@@ -75,7 +85,7 @@ func main() {
 	router.PathPrefix("/swaggerui/").Handler(http.StripPrefix("/swaggerui/", fs))
 
 	// Start to listen
-	log.Fatal(http.ListenAndServe(":8000", router))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", &portNumber), router))
 }
 
 func initProducer() (*sarama.SyncProducer, error) {

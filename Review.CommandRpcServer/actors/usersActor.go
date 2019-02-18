@@ -24,7 +24,7 @@ type UsersActor struct{}
 func (actor *UsersActor) Receive(context actor.Context) {
 	switch msg := context.Message().(type) {
 	case *VerifyUserMessage:
-		log.Printf("VerifyUserMessage %v\n", msg)
+		log.Printf("UsersActor -> VerifyUserMessage %v\n", msg)
 
 		// TODO : Get data from source
 		time.Sleep(1 * time.Second)
