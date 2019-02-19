@@ -1,7 +1,7 @@
 package actors
 
 import (
-	"fmt"
+	"log"
 
 	"github.com/AsynkronIT/protoactor-go/actor"
 )
@@ -25,14 +25,14 @@ type SaveReviewMessage struct{}
 // Receive handles SaveReviewMessage, ... messages
 func (reviewActor *ReviewActor) Receive(context actor.Context) {
 	switch msg := context.Message().(type) {
-	case SaveReviewMessage:
-		fmt.Printf("ReviewActor -> SaveReviewMessage %v\n", msg)
+	case *SaveReviewMessage:
+		log.Printf("ReviewActor -> SaveReviewMessage %v\n", msg)
 
 		mpOrdersProps := actor.FromProducer(NewMPOrdersActor)
 		mpOrdersPid := context.Spawn(mpOrdersProps)
 
 		props := actor.FromProducer(func() actor.Actor {
-			return NewOrdersActor(mpOrdersPid)
+			return NewOrdersActor(mpOrdersPid, context.Self())
 		})
 		ordersPid := context.Spawn(props)
 
@@ -40,8 +40,8 @@ func (reviewActor *ReviewActor) Receive(context actor.Context) {
 			ProductID: reviewActor.ProductID,
 			UserID:    reviewActor.UserID,
 		})
-	case VerifyOrderResponse:
-		fmt.Printf("ReviewActor -> VerifyOrderResponse %v\n", msg)
+	case *VerifyOrderResponse:
+		log.Printf("ReviewActor -> VerifyOrderResponse %v\n", msg)
 		reviewActor.isVerified = msg.IsPurchased
 
 		usersProp := actor.FromProducer(NewUsersActor)
@@ -50,8 +50,8 @@ func (reviewActor *ReviewActor) Receive(context actor.Context) {
 		context.Request(usersPid, &VerifyUserMessage{
 			UserID: reviewActor.UserID,
 		})
-	case VerifyUserResponse:
-		fmt.Printf("ReviewActor -> VerifyUserResponse %v\n", msg)
+	case *VerifyUserResponse:
+		log.Printf("ReviewActor -> VerifyUserResponse %v\n", msg)
 		reviewActor.isUserVerified = msg.IsPermitted
 
 		reviewActor.ResponseChn <- struct {

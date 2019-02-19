@@ -1,0 +1,23 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: command-engine
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: command-engine
+    spec:
+      containers:
+        - name: command-engine
+          image: command-engine:latest
+          ports:
+            - containerPort: 3000
+          imagePullPolicy: IfNotPresent
+          args:
+            [
+              "-server_addr=command-rpcserver:3000",
+              "-kafka_brokers=kafka:9092",
+              "-group_id=review-command-engine",
+            ]

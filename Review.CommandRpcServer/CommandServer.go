@@ -2,10 +2,13 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"io"
+	"log"
+	"time"
 
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 
 	"github.com/AsynkronIT/protoactor-go/actor"
 	"github.com/farukterzioglu/micGo-services/Review.CommandRpcServer/actors"
@@ -14,7 +17,7 @@ import (
 )
 
 // CommandServer for handling rpc commands
-type CommandServer struct {}
+type CommandServer struct{}
 
 // NewCommandServer creates and return a CommandServer instance
 func NewCommandServer() *CommandServer {
@@ -24,6 +27,12 @@ func NewCommandServer() *CommandServer {
 
 // SaveReview handles SaveReview rpc command
 func (server *CommandServer) SaveReview(ctx context.Context, request *pb.NewReviewRequest) (*pb.ReviewId, error) {
+	md, ok := metadata.FromIncomingContext(ctx)
+	if ok {
+		requestOwner := md["request-owner"]
+		log.Printf("SaveReview request owner %v\n", requestOwner)
+	}
+
 	chn := make(chan interface{})
 
 	props := actor.FromProducer(func() actor.Actor {
@@ -38,11 +47,16 @@ func (server *CommandServer) SaveReview(ctx context.Context, request *pb.NewRevi
 		return &reviewActor
 	})
 	reviewsPid := actor.Spawn(props)
-	reviewsPid.Tell(actors.SaveReviewMessage{})
+	reviewsPid.Tell(&actors.SaveReviewMessage{})
 
-	result := <-chn
-	fmt.Printf("ReviewActor -> VerifyUserResponse %v\n", result)
-	return &pb.ReviewId{ReviewId: request.Review.ReviewID}, nil
+	select {
+	case result := <-chn:
+		log.Printf("CommandServer -> SaveReview response %v\n", result)
+		return &pb.ReviewId{ReviewId: request.Review.ReviewID}, nil
+	case <-time.After(5 * time.Second):
+		log.Printf("CommandServer -> SaveReview request timed out!\n")
+		return nil, status.Errorf(codes.Canceled, "request timed out!")
+	}
 }
 
 // SaveReviews handles SaveReviews rpc command
@@ -64,7 +78,7 @@ func (server *CommandServer) SaveReviews(stream pb.ReviewService_SaveReviewsServ
 			Text: request.Review.Text,
 			Star: int8(request.Review.Star),
 		}
-		fmt.Printf("Received review with text : %s\n", review.Text)
+		log.Printf("Received review with text : %s\n", review.Text)
 
 		var reviewID string
 		// TODO : Process review
@@ -119,7 +133,7 @@ func (server *CommandServer) GetTopReviews(req *pb.GetTopReviewsRequest, stream 
 // RateReview saves the rating for review
 func (server *CommandServer) RateReview(ctx context.Context, req *pb.RateReviewRequest) (*pb.Empty, error) {
 	// TODO : Save the rating
-	fmt.Printf("Rated -> review id : %s, rating : %d\n", req.ReviewId, req.Star)
+	log.Printf("Rated -> review id : %s, rating : %d\n", req.ReviewId, req.Star)
 
 	return &pb.Empty{}, nil
 }

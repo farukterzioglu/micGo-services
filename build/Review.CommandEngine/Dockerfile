@@ -18,6 +18,5 @@ RUN apk add --no-cache bash
 RUN mkdir /app
 WORKDIR /app
 COPY --from=builder /go/src/github.com/farukterzioglu/micGo-services/Review.CommandEngine/app .
-COPY --from=builder /go/src/github.com/farukterzioglu/micGo-services/Review.CommandEngine/wait-for-it.sh .
 
-CMD ["./app"]
+ENTRYPOINT ["./app"]

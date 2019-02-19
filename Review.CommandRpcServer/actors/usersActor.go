@@ -1,7 +1,7 @@
 package actors
 
 import (
-	"fmt"
+	"log"
 	"time"
 
 	"github.com/AsynkronIT/protoactor-go/actor"
@@ -24,11 +24,11 @@ type UsersActor struct{}
 func (actor *UsersActor) Receive(context actor.Context) {
 	switch msg := context.Message().(type) {
 	case *VerifyUserMessage:
-		fmt.Printf("VerifyUserMessage %v\n", msg)
+		log.Printf("UsersActor -> VerifyUserMessage %v\n", msg)
 
 		// TODO : Get data from source
 		time.Sleep(1 * time.Second)
-		context.Respond(&VerifyUserResponse{IsPermitted: true})
+		context.Sender().Tell(&VerifyUserResponse{IsPermitted: true})
 	}
 }
 

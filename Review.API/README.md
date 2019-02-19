@@ -1,4 +1,7 @@
 ```
+go get github.com/golang/protobuf@master
+go build
+
 swagger generate spec -o ./swaggerui/swagger.json --scan-models
 // swagger serve -F=swagger swagger.json
 

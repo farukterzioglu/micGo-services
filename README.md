@@ -41,7 +41,7 @@ ls /consumers
 Reads from kafka topic and handles commands (new comment etc.) in go routines
 
 ```
-go run . -server_addr="localhost:10000" -kafka_brokers="172.24.96.1:9092" -group_id="test"
+go run . -server_addr="localhost:3000" -kafka_brokers="localhost:9092" -group_id="test"
 
 docker build -f .\build\Review.CommandEngine\Dockerfile -t command-engine:latest .
 docker run -it command-engine:latest

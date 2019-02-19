@@ -2,6 +2,8 @@ Generate proto service file
 
 ```
 cd ./Review.CommandRpcServer
+go get github.com/golang/protobuf@master
+go mod vendor
 
 protoc -I reviewservice/ reviewservice/review_service.proto --go_out=plugins=grpc:reviewservice
 ```
