@@ -58,6 +58,6 @@ func verifyOrder(productID, userID string) (bool, error) {
 }
 
 // NewOrdersActor ...
-func NewOrdersActor(pid *actor.PID, rPid *actor.PID) actor.Actor {
+func NewOrdersActor(pid, rPid *actor.PID) actor.Actor {
 	return &OrdersActor{mpOrdersPid: pid, reviewPid: rPid}
 }
