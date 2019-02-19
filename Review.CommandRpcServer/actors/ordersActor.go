@@ -52,7 +52,7 @@ func (actor *OrdersActor) Receive(context actor.Context) {
 	}
 }
 
-func verifyOrder(productID string, userID string) (bool, error) {
+func verifyOrder(productID, userID string) (bool, error) {
 	// TODO : Get data from source
 	return true, nil
 }
