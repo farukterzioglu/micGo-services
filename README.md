@@ -54,7 +54,7 @@ Handles rpc commands
 ```
 go run .
 
-docker build -f .\build\Review.CommandRpcServer\Dockerfile -t command-rpcserver:latest .
+docker build -f ./build/Review.CommandRpcServer/Dockerfile -t command-rpcserver:latest .
 docker run -it -p 3000:3000 command-rpcserver:latest
 ```
 
