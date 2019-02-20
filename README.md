@@ -43,8 +43,8 @@ Reads from kafka topic and handles commands (new comment etc.) in go routines
 ```
 go run . -server_addr="localhost:3000" -kafka_brokers="localhost:9092" -group_id="test"
 
-docker build -f .\build\Review.CommandEngine\Dockerfile -t command-engine:latest .
-docker run -it command-engine:latest
+$ docker build -f ./build/Review.CommandEngine/Dockerfile -t command-engine:latest .
+$ docker run -it command-engine:latest
 ```
 
 ### Command Rpc Server
@@ -54,8 +54,8 @@ Handles rpc commands
 ```
 go run .
 
-docker build -f ./build/Review.CommandRpcServer/Dockerfile -t command-rpcserver:latest .
-docker run -it -p 3000:3000 command-rpcserver:latest
+$ docker build -f ./build/Review.CommandRpcServer/Dockerfile -t command-rpcserver:latest .
+$ docker run -it -p 3000:3000 command-rpcserver:latest
 ```
 
 ### Review api
