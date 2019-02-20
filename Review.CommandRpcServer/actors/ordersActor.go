@@ -52,12 +52,12 @@ func (actor *OrdersActor) Receive(context actor.Context) {
 	}
 }
 
-func verifyOrder(productID string, userID string) (bool, error) {
+func verifyOrder(productID, userID string) (bool, error) {
 	// TODO : Get data from source
 	return true, nil
 }
 
 // NewOrdersActor ...
-func NewOrdersActor(pid *actor.PID, rPid *actor.PID) actor.Actor {
+func NewOrdersActor(pid, rPid *actor.PID) actor.Actor {
 	return &OrdersActor{mpOrdersPid: pid, reviewPid: rPid}
 }
