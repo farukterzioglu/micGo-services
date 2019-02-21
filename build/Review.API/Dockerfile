@@ -8,19 +8,17 @@ ENV CGO_ENABLED=0 GOOS=linux GOARCH=amd64
 # https://github.com/go-swagger/go-swagger/issues/1671
 ENV GO111MODULE=off 
 
-RUN set -x && \
-    go get github.com/Shopify/sarama && \
-    go get github.com/gorilla/mux && \
-    go get github.com/go-swagger/go-swagger/cmd/swagger && \
-    go get github.com/golang/protobuf/proto && \
-    go get google.golang.org/grpc && \ 
-    go get github.com/google/uuid 
+COPY ./Review.API/Gopkg.toml ./Review.API/Gopkg.lock /go/src/github.com/farukterzioglu/micGo-services/Review.API/
+WORKDIR /go/src/github.com/farukterzioglu/micGo-services/Review.API/ 
+
+RUN go get -u github.com/golang/dep/...
+RUN dep ensure --vendor-only
 
 COPY ./Review.Domain /go/src/github.com/farukterzioglu/micGo-services/Review.Domain/
 COPY ./Review.API /go/src/github.com/farukterzioglu/micGo-services/Review.API/
 COPY ./Review.CommandRpcServer /go/src/github.com/farukterzioglu/micGo-services/Review.CommandRpcServer/
 
-WORKDIR /go/src/github.com/farukterzioglu/micGo-services/Review.API/ 
+RUN go build -a -o app .
 RUN swagger generate spec -o ./swaggerui/swagger.json --scan-models
 
 FROM alpine:latest

@@ -65,7 +65,7 @@ cd .\Review.API
 go run . -kafka_brokers='127.0.0.1:9092' -server_addr="localhost:3000"
 
 $ docker build -f ./build/Review.API/Dockerfile -t review-api:latest .
-$ docker run -it -p 8000:8000 review-api:latest -kafka_brokers="172.26.81.202:9092" -server_addr="localhost:3000" -port="8000"
+$ docker run -it -p 8000:8000 review-api:latest -kafka_brokers="172.19.0.2:9092" -server_addr="localhost:3000" -port="8000"
 
 // Navigate to http://localhost:8000/swaggerui/
 ```

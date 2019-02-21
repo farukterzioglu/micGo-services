@@ -24,7 +24,7 @@ require (
 	github.com/go-openapi/validate v0.18.0 // indirect
 	github.com/go-swagger/go-swagger v0.18.0 // indirect
 	github.com/gogo/protobuf v1.2.1 // indirect
-	github.com/golang/protobuf v1.2.1-0.20190205222052-c823c79ea157
+	github.com/golang/protobuf v1.2.0
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/google/uuid v1.1.0
 	github.com/gorilla/handlers v1.4.0 // indirect
@@ -36,5 +36,6 @@ require (
 	github.com/rcrowley/go-metrics v0.0.0-20181016184325-3113b8401b8a // indirect
 	github.com/spf13/viper v1.3.1 // indirect
 	github.com/toqueteos/webbrowser v1.1.0 // indirect
+	google.golang.org/genproto v0.0.0-20180831171423-11092d34479b // indirect
 	google.golang.org/grpc v1.18.0
 )
