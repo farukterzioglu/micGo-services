@@ -7,7 +7,6 @@ WORKDIR /src
 
 COPY ./go.mod ./go.sum ./
 RUN go mod download
-# go get github.com/golang/protobuf/proto
 
 COPY ./Review.Domain ./Review.Domain/
 COPY ./Review.CommandRpcServer ./Review.CommandRpcServer/

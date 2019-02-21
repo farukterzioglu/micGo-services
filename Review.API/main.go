@@ -55,12 +55,13 @@ func main() {
 	{
 		logger = kitlog.NewLogfmtLogger(os.Stderr)
 		logger = kitlog.With(logger, "ts", kitlog.DefaultTimestampUTC)
-		logger = kitlog.With(logger, "caller", kitlog.DefaultCaller)
+		logger = kitlog.With(logger, "caller", "Review API") //kitlog.DefaultCaller)
 	}
 
 	flag.Parse()
 	logger.Log("Broker address", *kafkaBrokers)
 	logger.Log("RPC server address", *serverAddr)
+	logger.Log("Application port", *portNumber)
 
 	// Init Kafka producer
 	// TODO : Retry + fail over
@@ -85,7 +86,7 @@ func main() {
 	router.PathPrefix("/swaggerui/").Handler(http.StripPrefix("/swaggerui/", fs))
 
 	// Start to listen
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", &portNumber), router))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", *portNumber), router))
 }
 
 func initProducer() (*sarama.SyncProducer, error) {
