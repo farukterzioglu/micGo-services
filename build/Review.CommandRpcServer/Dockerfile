@@ -1,21 +1,19 @@
 ARG GO_VERSION=1.11
 FROM golang:${GO_VERSION} AS builder
 
+ENV CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on 
+
 WORKDIR /src
 
 COPY ./go.mod ./go.sum ./
+RUN go mod download
+
+COPY ./Review.Domain ./Review.Domain
 COPY ./Review.CommandRpcServer ./Review.CommandRpcServer
 
-ENV CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on 
+WORKDIR /src/Review.CommandRpcServer
 RUN go build -a -o app .
 
-WORKDIR /src/Review.CommandRpcServer
-# go get google.golang.org/grpc && \
-# go get github.com/AsynkronIT/protoactor-go/actor
-
-# COPY ./Review.Domain /go/src/github.com/farukterzioglu/micGo-services/Review.Domain/
-# COPY ./Review.CommandRpcServer /go/src/github.com/farukterzioglu/micGo-services/Review.CommandRpcServer/
-# WORKDIR /go/src/github.com/farukterzioglu/micGo-services/Review.CommandRpcServer/
 
 FROM scratch
 WORKDIR /root/

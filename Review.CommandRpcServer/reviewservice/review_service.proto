@@ -1,4 +1,4 @@
-syntax = "proto3";
+syntax = "proto2";
 
 package reviewservice;
 
@@ -11,32 +11,32 @@ service ReviewService {
 }
 
 message Review {
-    string Text = 1;
-    int32 Star = 2;
-    string ReviewID = 3;
-    string ProductID = 4;
-    string UserID = 5;
+    required string Text = 1;
+    required int32 Star = 2;
+    required string ReviewID = 3;
+    required string ProductID = 4;
+    required string UserID = 5;
 }
 
 message NewReviewRequest {
-    Review review = 1;
+    required Review review = 1;
 }
    
 message ReviewId {
-    string reviewId = 1;
+    required string reviewId = 1;
 }
 
 message GetReviewRequest {
-    string reviewID = 1;
+    required string reviewID = 1;
 }
 
 message GetTopReviewsRequest {
-    int32 count = 1;
+    required int32 count = 1;
 }
 
 message RateReviewRequest {
-    string reviewId = 1;
-    int32 star = 2;
+    required string reviewId = 1;
+    required int32 star = 2;
 }
 
 message Empty {}

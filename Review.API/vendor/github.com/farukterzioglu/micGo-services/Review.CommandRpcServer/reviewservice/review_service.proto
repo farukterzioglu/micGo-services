@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package reviewservice;
+
+service ReviewService {
+    rpc SaveReview(NewReviewRequest) returns (ReviewId) {}
+    rpc SaveReviews(stream NewReviewRequest) returns (stream ReviewId) {}
+    rpc GetReview(GetReviewRequest) returns (Review) {}
+    rpc GetTopReviews(GetTopReviewsRequest) returns (stream Review) {}
+    rpc RateReview(RateReviewRequest) returns (Empty) {}
+}
+
+message Review {
+    string Text = 1;
+    int32 Star = 2;
+    string ReviewID = 3;
+    string ProductID = 4;
+    string UserID = 5;
+}
+
+message NewReviewRequest {
+    Review review = 1;
+}
+   
+message ReviewId {
+    string reviewId = 1;
+}
+
+message GetReviewRequest {
+    string reviewID = 1;
+}
+
+message GetTopReviewsRequest {
+    int32 count = 1;
+}
+
+message RateReviewRequest {
+    string reviewId = 1;
+    int32 star = 2;
+}
+
+message Empty {}

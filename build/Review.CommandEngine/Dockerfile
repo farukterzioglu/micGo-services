@@ -1,22 +1,24 @@
-FROM golang:1.10.1 AS builder
-RUN go version
+ARG GO_VERSION=1.11
+FROM golang:${GO_VERSION} AS builder
 
-RUN set -x && \
-    go get github.com/bsm/sarama-cluster && \
-    go get google.golang.org/grpc && \
-    go get github.com/golang/protobuf/proto
+ENV CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on 
 
-COPY ./Review.Domain /go/src/github.com/farukterzioglu/micGo-services/Review.Domain/
-COPY ./Review.CommandRpcServer /go/src/github.com/farukterzioglu/micGo-services/Review.CommandRpcServer/
-COPY ./Review.CommandEngine /go/src/github.com/farukterzioglu/micGo-services/Review.CommandEngine/
-WORKDIR /go/src/github.com/farukterzioglu/micGo-services/Review.CommandEngine/ 
+WORKDIR /src
 
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -o app .
+COPY ./go.mod ./go.sum ./
+RUN go mod download
+
+COPY ./Review.Domain ./Review.Domain/
+COPY ./Review.CommandRpcServer ./Review.CommandRpcServer/
+COPY ./Review.CommandEngine ./Review.CommandEngine/
+
+WORKDIR /src/Review.CommandEngine/ 
+RUN go build -a -o app .
 
 FROM alpine:latest
 RUN apk add --no-cache bash
 RUN mkdir /app
 WORKDIR /app
-COPY --from=builder /go/src/github.com/farukterzioglu/micGo-services/Review.CommandEngine/app .
+COPY --from=builder /src/Review.CommandEngine/app .
 
 ENTRYPOINT ["./app"]

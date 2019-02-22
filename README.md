@@ -43,8 +43,8 @@ Reads from kafka topic and handles commands (new comment etc.) in go routines
 ```
 go run . -server_addr="localhost:3000" -kafka_brokers="localhost:9092" -group_id="test"
 
-docker build -f .\build\Review.CommandEngine\Dockerfile -t command-engine:latest .
-docker run -it command-engine:latest
+$ docker build -f ./build/Review.CommandEngine/Dockerfile -t command-engine:latest .
+$ docker run -it command-engine:latest -server_addr="localhost:3000" -kafka_brokers="[docker host ip address]]:9092" -group_id="test"
 ```
 
 ### Command Rpc Server
@@ -54,8 +54,8 @@ Handles rpc commands
 ```
 go run .
 
-docker build -f ./build/Review.CommandRpcServer/Dockerfile -t command-rpcserver:latest .
-docker run -it -p 3000:3000 command-rpcserver:latest
+$ docker build -f ./build/Review.CommandRpcServer/Dockerfile -t command-rpcserver:latest .
+$ docker run -it -p 3000:3000 command-rpcserver:latest
 ```
 
 ### Review api
@@ -64,8 +64,8 @@ docker run -it -p 3000:3000 command-rpcserver:latest
 cd .\Review.API
 go run . -kafka_brokers='127.0.0.1:9092' -server_addr="localhost:3000"
 
-docker build -f .\build\Review.API\Dockerfile -t review-api:latest .
-docker run -it -p 8000:8000 review-api:latest -kafka_brokers="localhost:9092" -server_addr="localhost:3000"
+$ docker build -f ./build/Review.API/Dockerfile -t review-api:latest .
+$ docker run -it -p 8000:8000 review-api:latest -kafka_brokers="172.19.0.2:9092" -server_addr="localhost:3000" -port="8000"
 
 // Navigate to http://localhost:8000/swaggerui/
 ```
