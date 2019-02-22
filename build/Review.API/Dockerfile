@@ -19,13 +19,13 @@ COPY ./Review.API /go/src/github.com/farukterzioglu/micGo-services/Review.API/
 COPY ./Review.CommandRpcServer /go/src/github.com/farukterzioglu/micGo-services/Review.CommandRpcServer/
 
 RUN go build -a -o app .
-RUN swagger generate spec -o ./swaggerui/swagger.json --scan-models
+# RUN swagger generate spec -o ./swaggerui/swagger.json --scan-models
 
 FROM alpine:latest
 RUN apk add --no-cache bash
 RUN mkdir /app
 WORKDIR /app
 COPY --from=builder /go/src/github.com/farukterzioglu/micGo-services/Review.API/app .
-COPY --from=builder /go/src/github.com/farukterzioglu/micGo-services/Review.API/swaggerui/ ./swaggerui
+# COPY --from=builder /go/src/github.com/farukterzioglu/micGo-services/Review.API/swaggerui/ ./swaggerui
 
 ENTRYPOINT ["./app"]
