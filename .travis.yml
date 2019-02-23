@@ -1,0 +1,12 @@
+language: go
+go:
+    - 1.11.x
+services:
+    - docker
+sudo: required
+script:
+    - make build-all
+
+notifications:
+    email:
+        - faruk.terzioglu@hotmail.com
