@@ -1,5 +1,7 @@
 For Kubernetes setup, see [README-K8S](README-K8S.md)
 
+Type 'make' to see all commands. [(makefile)](makefile)
+
 ### Start Kafka & Zookeper w/ docker-compose
 
 Start Zookeper & Kafka, create topics "create-review"  
@@ -68,13 +70,4 @@ $ docker build -f ./build/Review.API/Dockerfile -t review-api:latest .
 $ docker run -it -p 8000:8000 review-api:latest -kafka_brokers="172.19.0.2:9092" -server_addr="localhost:3000" -port="8000"
 
 // Navigate to http://localhost:8000/swaggerui/
-```
-
-```
-PUT /v1/review HTTP/1.1
-Host: localhost:8000
-Content-Type: application/json
-cache-control: no-cache
-Postman-Token: b39202c7-244c-456d-bac6-7fe706e9a2d8
-{ "text": "Sample review", "star": 1 }------WebKitFormBoundary7MA4YWxkTrZu0gW--
 ```

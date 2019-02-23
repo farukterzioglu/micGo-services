@@ -263,3 +263,5 @@ __pycache__/
 *.pyc
 Review.CommandRpcServer/Review.CommandRpcServer
 Review.CommandEngine/Review.CommandEngine
+Review.API/Review.API
+Review.CommandRpcServer/command-rpcserver
