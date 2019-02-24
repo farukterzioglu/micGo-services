@@ -1,5 +1,7 @@
 [![Build Status](https://travis-ci.org/farukterzioglu/micGo-services.svg?branch=master)](https://travis-ci.org/farukterzioglu/micGo-services) [![Maintainability](https://api.codeclimate.com/v1/badges/6e1e4d4f521f7697f69a/maintainability)](https://codeclimate.com/github/farukterzioglu/micGo-services/maintainability) [![Test Coverage](https://api.codeclimate.com/v1/badges/6e1e4d4f521f7697f69a/test_coverage)](https://codeclimate.com/github/farukterzioglu/micGo-services/test_coverage) [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/farukterzioglu/micGo-services) [![Discord link](https://img.shields.io/badge/chat-on%20discord-brightgreen.svg)](https://discord.gg/fNcD2Cd) [![License](https://img.shields.io/github/license/farukterzioglu/micGo-services.svg)]() [![HitCount](http://hits.dwyl.io/farukterzioglu/micGo-services.svg)](http://hits.dwyl.io/farukterzioglu/micGo-services)
 
+![An ugly uml](./uml)
+
 For Kubernetes setup, see [README-K8S](README-K8S.md)
 
 Type 'make' to see all commands. [(makefile)](makefile)
